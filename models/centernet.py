@@ -7,7 +7,9 @@ from keras.optimizers import *
 from keras.initializers import *
 from keras.regularizers import *
 
-from centernet_head import centernet_head
+from models.centernet_head import centernet_head
+from models.resnet50 import ResNet50
+from models.hrnet import HRNet
 
 
 def nms(heat, kernel=3):
@@ -30,7 +32,8 @@ def topk(hm, k=100):
 
 
 def centernet(input_shape, num_classes, backbone='resnet50', max_objects=100, mode="train", num_stacks=2):
-    assert backbone in ['resnet50', 'light_hrnet']
+    assert backbone in ['resnet50', 'hrnet', 'light_hrnet']
+
     output_size = input_shape[0] // 4
     image_input = Input(shape=input_shape)
     hm_input = Input(shape=(output_size, output_size, num_classes))
@@ -54,3 +57,10 @@ def centernet(input_shape, num_classes, backbone='resnet50', max_objects=100, mo
                                                  num_classes=num_classes))([y1, y2, y3])
             prediction_model = Model(inputs=image_input, outputs=detections)
             return prediction_model
+
+    elif backbone == 'hrnet':
+        hrnet = HRNet(image_input)
+        y1, y2, y3 = centernet_head(resnet50, num_classes)
+
+
+
