@@ -277,7 +277,7 @@ def final_layer(x, classes=1):
     return x
 
 
-def hrnet(batch_size, height, width, channel, classes):
+def HRNet(batch_size, height, width, channel, classes):
     inputs = Input(batch_shape=(batch_size,) + (height, width, channel))
 
     x = stem_net(inputs)
