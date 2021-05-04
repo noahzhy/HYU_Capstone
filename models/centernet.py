@@ -20,7 +20,7 @@ def nms(heat, kernel=3):
 
 def topk(hm, k=100):
     hm = nms(hm)
-    b, h, w, c = hm
+    b, h, w, c = tf.shape(hm)
     # b, h, w, c = tf.shape(hm)[0], tf.shape(hm)[1], tf.shape(hm)[2], tf.shape(hm)[3]
     hm = tf.reshape(hm, (b, -1))
     scores, indices = tf.math.top_k(hm, k=k, sorted=True)

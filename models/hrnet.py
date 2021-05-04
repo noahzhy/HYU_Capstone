@@ -1,193 +1,305 @@
-import numpy as np
-import tensorflow as tf
+import keras.backend as K
 from keras.models import *
 from keras.layers import *
 from keras.optimizers import *
 from keras.initializers import *
-from keras import backend as K
 
 
-def conv(x, outsize, kernel_size, strides_=1, padding_='same', activation=None):
-    return Conv2D(
-        outsize, 
-        kernel_size,
-        strides=strides_,
-        padding=padding_,
-        kernel_initializer=RandomNormal(stddev=0.001),
-        use_bias=False,
-        activation=activation
-    )(x)
+def conv3x3(x, out_filters, strides=(1, 1)):
+    x = Conv2D(out_filters, 3, padding='same', strides=strides,
+               use_bias=False, kernel_initializer='he_normal')(x)
+    return x
 
 
-def Bottleneck(x, size, downsampe=False):
-    residual = x
+def basic_Block(input, out_filters, strides=(1, 1), with_conv_shortcut=False):
+    x = conv3x3(input, out_filters, strides)
+    x = BatchNormalization(axis=3)(x)
+    x = Activation('relu')(x)
 
-    out = conv(x, size, 1, padding_='valid')
-    out = BatchNormalization(epsilon=1e-5, momentum=0.1)(out)
-    out = Activation('relu')(out)
+    x = conv3x3(x, out_filters)
+    x = BatchNormalization(axis=3)(x)
 
-    out = conv(out, size, 3)
-    out = BatchNormalization(epsilon=1e-5, momentum=0.1)(out)
-    out = Activation('relu')(out)
+    if with_conv_shortcut:
+        residual = Conv2D(out_filters, 1, strides=strides,
+                          use_bias=False, kernel_initializer='he_normal')(input)
+        residual = BatchNormalization(axis=3)(residual)
+        x = add([x, residual])
+    else:
+        x = add([x, input])
 
-    out = conv(out, size * 4, 1, padding_='valid')
-    out = BatchNormalization(epsilon=1e-5, momentum=0.1)(out)
-
-    if downsampe:
-        residual = conv(x, size * 4, 1, padding_='valid')
-        residual = BatchNormalization(epsilon=1e-5, momentum=0.1)(residual)
-
-    out = Add()([out, residual])
-    out = Activation('relu')(out)
-
-    return out
+    x = Activation('relu')(x)
+    return x
 
 
-def BasicBlock(x, size, downsampe=False):
-    residual = x
+def bottleneck_Block(input, out_filters, strides=(1, 1), with_conv_shortcut=False):
+    expansion = 4
+    de_filters = int(out_filters / expansion)
 
-    out = conv(x, size, 3)
-    out = BatchNormalization(epsilon=1e-5, momentum=0.1)(out)
-    out = Activation('relu')(out)
+    x = Conv2D(de_filters, 1, use_bias=False,
+               kernel_initializer='he_normal')(input)
+    x = BatchNormalization(axis=3)(x)
+    x = Activation('relu')(x)
 
-    out = conv(out, size, 3)
-    out = BatchNormalization(epsilon=1e-5, momentum=0.1)(out)
+    x = Conv2D(de_filters, 3, strides=strides, padding='same',
+               use_bias=False, kernel_initializer='he_normal')(x)
+    x = BatchNormalization(axis=3)(x)
+    x = Activation('relu')(x)
 
-    if downsampe:
-        residual = conv(x, size, 1, padding_='valid')
-        residual = BatchNormalization(epsilon=1e-5, momentum=0.1)(residual)
+    x = Conv2D(out_filters, 1, use_bias=False,
+               kernel_initializer='he_normal')(x)
+    x = BatchNormalization(axis=3)(x)
 
-    out = Add()([out, residual])
-    out = Activation('relu')(out)
+    if with_conv_shortcut:
+        residual = Conv2D(out_filters, 1, strides=strides,
+                          use_bias=False, kernel_initializer='he_normal')(input)
+        residual = BatchNormalization(axis=3)(residual)
+        x = add([x, residual])
+    else:
+        x = add([x, input])
 
-    return out
+    x = Activation('relu')(x)
+    return x
 
 
-def layer1(x):
-    x = Bottleneck(x, 64, downsampe=True)
-    x = Bottleneck(x, 64)
-    x = Bottleneck(x, 64)
-    x = Bottleneck(x, 64)
+def stem_net(input):
+    x = Conv2D(64, 3, strides=(2, 2), padding='same',
+               use_bias=False, kernel_initializer='he_normal')(input)
+    x = BatchNormalization(axis=3)(x)
+    x = Activation('relu')(x)
+
+    x = bottleneck_Block(x, 256, with_conv_shortcut=True)
+    x = bottleneck_Block(x, 256, with_conv_shortcut=False)
+    x = bottleneck_Block(x, 256, with_conv_shortcut=False)
+    x = bottleneck_Block(x, 256, with_conv_shortcut=False)
 
     return x
 
 
-def transition_layer(x, in_channels, out_channels):
-    num_in = len(in_channels)
-    num_out = len(out_channels)
-    out = []
+def transition_layer1(x, out_filters_list=[32, 64]):
+    x0 = Conv2D(out_filters_list[0], 3, padding='same',
+                use_bias=False, kernel_initializer='he_normal')(x)
+    x0 = BatchNormalization(axis=3)(x0)
+    x0 = Activation('relu')(x0)
 
-    for i in range(num_out):
-        if i < num_in:
-            if in_channels[i] != out_channels[i]:
-                residual = conv(x[i], out_channels[i], 3)
-                residual = BatchNormalization(
-                    epsilon=1e-5, momentum=0.1)(residual)
-                residual = Activation('relu')(residual)
-                out.append(residual)
-            else:
-                out.append(x[i])
-        else:
-            residual = conv(x[-1], out_channels[i], 3, strides_=2)
-            residual = BatchNormalization(epsilon=1e-5, momentum=0.1)(residual)
-            residual = Activation('relu')(residual)
-            out.append(residual)
+    x1 = Conv2D(out_filters_list[1], 3, strides=(2, 2),
+                padding='same', use_bias=False, kernel_initializer='he_normal')(x)
+    x1 = BatchNormalization(axis=3)(x1)
+    x1 = Activation('relu')(x1)
 
-    return out
+    return [x0, x1]
 
 
-def branches(x, block_num, channels):
-    out = []
-    for i in range(len(channels)):
-        residual = x[i]
-        for j in range(block_num):
-            residual = BasicBlock(residual, channels[i])
-        out.append(residual)
-    return out
+def branch1_0(x, out_filters=32):
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    return x
 
 
-def fuse_layers(x, channels, multi_scale_output=True):
-    out = []
-
-    for i in range(len(channels) if multi_scale_output else 1):
-        residual = x[i]
-        for j in range(len(channels)):
-            if j > i:
-                y = conv(x[j], channels[i], 1, padding_='valid')
-                y = BatchNormalization(epsilon=1e-5, momentum=0.1)(y)
-                y = UpSampling2D(size=2 ** (j - i))(y)
-                residual = Add()([residual, y])
-            elif j < i:
-                y = x[j]
-                for k in range(i - j):
-                    if k == i - j - 1:
-                        y = conv(y, channels[i], 3, strides_=2)
-                        y = BatchNormalization(epsilon=1e-5, momentum=0.1)(y)
-                    else:
-                        y = conv(y, channels[j], 3, strides_=2)
-                        y = BatchNormalization(epsilon=1e-5, momentum=0.1)(y)
-                        y = Activation('relu')(y)
-                residual = Add()([residual, y])
-
-        residual = Activation('relu')(residual)
-        out.append(residual)
-
-    return out
+def branch1_1(x, out_filters=64):
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    return x
 
 
-def HighResolutionModule(x, channels, multi_scale_output=True):
-    residual = branches(x, 4, channels)
-    out = fuse_layers(residual, channels,
-                      multi_scale_output=multi_scale_output)
-    return out
+def fuse_layer1(x):
+    x0_0 = x[0]
+    x0_1 = Conv2D(32, 1, use_bias=False, kernel_initializer='he_normal')(x[1])
+    x0_1 = BatchNormalization(axis=3)(x0_1)
+    x0_1 = UpSampling2D(size=(2, 2))(x0_1)
+    x0 = add([x0_0, x0_1])
+
+    x1_0 = Conv2D(64, 3, strides=(2, 2), padding='same',
+                  use_bias=False, kernel_initializer='he_normal')(x[0])
+    x1_0 = BatchNormalization(axis=3)(x1_0)
+    x1_1 = x[1]
+    x1 = add([x1_0, x1_1])
+    return [x0, x1]
 
 
-def stage(x, num_modules, channels, multi_scale_output=True):
-    out = x
-    for i in range(num_modules):
-        if i == num_modules - 1 and multi_scale_output == False:
-            out = HighResolutionModule(out, channels, multi_scale_output=False)
-        else:
-            out = HighResolutionModule(out, channels)
+def transition_layer2(x, out_filters_list=[32, 64, 128]):
+    x0 = Conv2D(out_filters_list[0], 3, padding='same',
+                use_bias=False, kernel_initializer='he_normal')(x[0])
+    x0 = BatchNormalization(axis=3)(x0)
+    x0 = Activation('relu')(x0)
 
-    return out
+    x1 = Conv2D(out_filters_list[1], 3, padding='same',
+                use_bias=False, kernel_initializer='he_normal')(x[1])
+    x1 = BatchNormalization(axis=3)(x1)
+    x1 = Activation('relu')(x1)
+
+    x2 = Conv2D(out_filters_list[2], 3, strides=(2, 2),
+                padding='same', use_bias=False, kernel_initializer='he_normal')(x[1])
+    x2 = BatchNormalization(axis=3)(x2)
+    x2 = Activation('relu')(x2)
+
+    return [x0, x1, x2]
 
 
-def HRNet(input_size=(256, 256, 3)):
-    channels_2 = [32, 64]
-    channels_3 = [32, 64, 128]
-    channels_4 = [32, 64, 128, 256]
-    num_modules_2 = 1
-    num_modules_3 = 4
-    num_modules_4 = 3
+def branch2_0(x, out_filters=32):
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    return x
 
-    inputs = Input(input_size)
-    x = conv(inputs, 64, 3, strides_=2)
-    x = BatchNormalization(epsilon=1e-5, momentum=0.1)(x)
-    x = conv(x, 64, 3, strides_=2)
-    x = BatchNormalization(epsilon=1e-5, momentum=0.1)(x)
+
+def branch2_1(x, out_filters=64):
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    return x
+
+
+def branch2_2(x, out_filters=128):
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    return x
+
+
+def fuse_layer2(x):
+    x0_0 = x[0]
+    x0_1 = Conv2D(32, 1, use_bias=False, kernel_initializer='he_normal')(x[1])
+    x0_1 = BatchNormalization(axis=3)(x0_1)
+    x0_1 = UpSampling2D(size=(2, 2))(x0_1)
+    x0_2 = Conv2D(32, 1, use_bias=False, kernel_initializer='he_normal')(x[2])
+    x0_2 = BatchNormalization(axis=3)(x0_2)
+    x0_2 = UpSampling2D(size=(4, 4))(x0_2)
+    x0 = add([x0_0, x0_1, x0_2])
+
+    x1_0 = Conv2D(64, 3, strides=(2, 2), padding='same',
+                  use_bias=False, kernel_initializer='he_normal')(x[0])
+    x1_0 = BatchNormalization(axis=3)(x1_0)
+    x1_1 = x[1]
+    x1_2 = Conv2D(64, 1, use_bias=False, kernel_initializer='he_normal')(x[2])
+    x1_2 = BatchNormalization(axis=3)(x1_2)
+    x1_2 = UpSampling2D(size=(2, 2))(x1_2)
+    x1 = add([x1_0, x1_1, x1_2])
+
+    x2_0 = Conv2D(32, 3, strides=(2, 2), padding='same',
+                  use_bias=False, kernel_initializer='he_normal')(x[0])
+    x2_0 = BatchNormalization(axis=3)(x2_0)
+    x2_0 = Activation('relu')(x2_0)
+    x2_0 = Conv2D(128, 3, strides=(2, 2), padding='same',
+                  use_bias=False, kernel_initializer='he_normal')(x2_0)
+    x2_0 = BatchNormalization(axis=3)(x2_0)
+    x2_1 = Conv2D(128, 3, strides=(2, 2), padding='same',
+                  use_bias=False, kernel_initializer='he_normal')(x[1])
+    x2_1 = BatchNormalization(axis=3)(x2_1)
+    x2_2 = x[2]
+    x2 = add([x2_0, x2_1, x2_2])
+    return [x0, x1, x2]
+
+
+def transition_layer3(x, out_filters_list=[32, 64, 128, 256]):
+    x0 = Conv2D(out_filters_list[0], 3, padding='same',
+                use_bias=False, kernel_initializer='he_normal')(x[0])
+    x0 = BatchNormalization(axis=3)(x0)
+    x0 = Activation('relu')(x0)
+
+    x1 = Conv2D(out_filters_list[1], 3, padding='same',
+                use_bias=False, kernel_initializer='he_normal')(x[1])
+    x1 = BatchNormalization(axis=3)(x1)
+    x1 = Activation('relu')(x1)
+
+    x2 = Conv2D(out_filters_list[2], 3, padding='same',
+                use_bias=False, kernel_initializer='he_normal')(x[2])
+    x2 = BatchNormalization(axis=3)(x2)
+    x2 = Activation('relu')(x2)
+
+    x3 = Conv2D(out_filters_list[3], 3, strides=(2, 2),
+                padding='same', use_bias=False, kernel_initializer='he_normal')(x[2])
+    x3 = BatchNormalization(axis=3)(x3)
+    x3 = Activation('relu')(x3)
+
+    return [x0, x1, x2, x3]
+
+
+def branch3_0(x, out_filters=32):
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    return x
+
+
+def branch3_1(x, out_filters=64):
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    return x
+
+
+def branch3_2(x, out_filters=128):
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    return x
+
+
+def branch3_3(x, out_filters=256):
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    x = basic_Block(x, out_filters, with_conv_shortcut=False)
+    return x
+
+
+def fuse_layer3(x):
+    x0_0 = x[0]
+    x0_1 = Conv2D(32, 1, use_bias=False, kernel_initializer='he_normal')(x[1])
+    x0_1 = BatchNormalization(axis=3)(x0_1)
+    x0_1 = UpSampling2D(size=(2, 2))(x0_1)
+    x0_2 = Conv2D(32, 1, use_bias=False, kernel_initializer='he_normal')(x[2])
+    x0_2 = BatchNormalization(axis=3)(x0_2)
+    x0_2 = UpSampling2D(size=(4, 4))(x0_2)
+    x0_3 = Conv2D(32, 1, use_bias=False, kernel_initializer='he_normal')(x[3])
+    x0_3 = BatchNormalization(axis=3)(x0_3)
+    x0_3 = UpSampling2D(size=(8, 8))(x0_3)
+    x0 = concatenate([x0_0, x0_1, x0_2, x0_3], axis=-1)
+    return x0
+
+
+def final_layer(x, classes=1):
+    x = UpSampling2D(size=(2, 2))(x)
+    x = Conv2D(classes, 1, use_bias=False, kernel_initializer='he_normal')(x)
+    x = BatchNormalization(axis=3)(x)
     x = Activation('relu')(x)
+    # x = Activation('sigmoid', name='Classification')(x)
+    return x
 
-    la1 = layer1(x)
-    tr1 = transition_layer([la1], [256], channels_2)
-    st2 = stage(tr1, num_modules_2, channels_2)
-    tr2 = transition_layer(st2, channels_2, channels_3)
-    st3 = stage(tr2, num_modules_3, channels_3)
-    tr3 = transition_layer(st3, channels_3, channels_4)
-    st4 = stage(tr3, num_modules_4, channels_4, multi_scale_output=False)
-    up1 = UpSampling2D()(st4[0])
-    up1 = conv(up1, 32, 3)
-    up1 = BatchNormalization(epsilon=1e-5, momentum=0.1)(up1)
-    up1 = Activation('relu')(up1)
-    up2 = UpSampling2D()(up1)
-    up2 = conv(up2, 32, 3)
-    up2 = BatchNormalization(epsilon=1e-5, momentum=0.1)(up2)
-    up2 = Activation('relu')(up2)
-    final = conv(up2, 3, 1, padding_='valid', activation='softmax')
 
-    return final
+def hrnet(batch_size, height, width, channel, classes):
+    inputs = Input(batch_shape=(batch_size,) + (height, width, channel))
 
-    # model = Model(inputs=inputs, outputs=final)
-    # model.compile(optimizer=Adam(lr=1e-4),
-    #               loss=dice_loss, metrics=[dice_coef])
-    # return model
+    x = stem_net(inputs)
+
+    x = transition_layer1(x)
+    x0 = branch1_0(x[0])
+    x1 = branch1_1(x[1])
+    x = fuse_layer1([x0, x1])
+
+    x = transition_layer2(x)
+    x0 = branch2_0(x[0])
+    x1 = branch2_1(x[1])
+    x2 = branch2_2(x[2])
+    x = fuse_layer2([x0, x1, x2])
+
+    x = transition_layer3(x)
+    x0 = branch3_0(x[0])
+    x1 = branch3_1(x[1])
+    x2 = branch3_2(x[2])
+    x3 = branch3_3(x[3])
+    x = fuse_layer3([x0, x1, x2, x3])
+
+    out = final_layer(x, classes=classes)
+
+    return out
