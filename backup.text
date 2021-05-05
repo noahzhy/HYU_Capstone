@@ -1,0 +1,28 @@
+def ShuffleNetUnit(inputs, out_channels, stride=1):
+    out_channels = out_channels//2
+
+    if stride == 1:
+        residual, short_cut = channel_split(inputs)
+        inputs = short_cut
+
+    x = Conv2D(out_channels, (1, 1), use_bias=False)(inputs)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = DepthwiseConv2D((3, 3), strides=stride, padding='same', use_bias=False)(x)
+    x = BatchNormalization()(x)
+    x = Conv2D(out_channels, (1, 1), use_bias=False)(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+
+    if stride == 1:
+        ret = Concatenate(axis=-1)([x, residual])
+    else:
+        s = DepthwiseConv2D((3, 3), strides=stride, padding='same', use_bias=False)(inputs)
+        s = BatchNormalization()(s)
+        s = Conv2D(out_channels, (1, 1), use_bias=False)(s)
+        s = BatchNormalization()(s)
+        s = Activation('relu')(s)
+        ret = Concatenate(axis=-1)([x, s])
+
+    ret = channel_shuffle(ret)
+    return ret

@@ -16,4 +16,8 @@ Then, we choosen ShuffleNetV2 as backbone now,
 
 ## Reference
 
+### ShuffleNetV2
+
+![network structure](images\shufflenet_v2.png)
+
 FairMOT
