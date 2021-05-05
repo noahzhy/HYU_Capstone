@@ -1,19 +1,18 @@
-import os
-import tensorflow as tf
 import keras
+import tensorflow as tf
+from keras import backend as K
 from keras.layers import *
 from keras.models import *
 from keras.optimizers import *
 from keras.activations import *
-from keras import backend as K
+from keras.utils import plot_model
 
 
-def channel_split(x):
-    in_channles = x.shape.as_list()[-1]
-    ip = in_channles // 2
-    c_hat = Lambda(lambda z: z[:, :, :, 0:ip])(x)
-    c = Lambda(lambda z: z[:, :, :, ip:])(x)
-    return c_hat, c
+def channel_split(x, num_splits=2):
+    if num_splits == 2:
+        return tf.split(x, axis=-1, num_or_size_splits=num_splits)
+    else:
+        raise ValueError('Error! num_splits should be 2')
 
 
 def channel_shuffle(x):
@@ -98,7 +97,6 @@ def ShuffleNetV2_x(inputs, scale=1):
 
 if __name__ == '__main__':
     inputs = Input(shape=(224, 224, 3))
-    model = ShuffleNetV2_x(inputs, scale=2)
+    model = ShuffleNetV2_x(inputs, scale=1)
     model.summary()
-    from keras.utils import plot_model
     plot_model(model, to_file='ShuffleNetV2.png', show_layer_names=True, show_shapes=True)
