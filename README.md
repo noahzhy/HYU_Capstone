@@ -28,6 +28,10 @@ Then, we choosen shuffleNetV2 as backbone now and reappear it via Keras.
 * large-RF shuffleNet 3x3 -> 5x5
 * centerNet train script (in processing)
 * modify the head of centerNet (in processing)
+    * Conv2D 3x3 -> DepthwiseConv2D 5x5
+    * refer to block of shuffleNet
+
+![refer block of shuffleNet](images/shufflenet_v2_block.png)
 
 ## Reference
 

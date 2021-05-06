@@ -21,7 +21,7 @@ def centernet_head(x, num_classes, num_filters=256):
         x = Activation('relu')(x)
 
     # heatmap header
-    y1 = Conv2D(64, 3, padding='same', use_bias=False,
+    y1 = DepthwiseConv2D(64, 5, padding='same', use_bias=False,
                 kernel_initializer='he_normal', kernel_regularizer=l2(5e-4))(x)
     y1 = BatchNormalization()(y1)
     y1 = Activation('relu')(y1)
@@ -29,7 +29,7 @@ def centernet_head(x, num_classes, num_filters=256):
                 kernel_regularizer=l2(5e-4), activation='sigmoid')(y1)
 
     # size header
-    y2 = Conv2D(64, 3, padding='same', use_bias=False,
+    y2 = DepthwiseConv2D(64, 5, padding='same', use_bias=False,
                 kernel_initializer='he_normal', kernel_regularizer=l2(5e-4))(x)
     y2 = BatchNormalization()(y2)
     y2 = Activation('relu')(y2)
@@ -37,7 +37,7 @@ def centernet_head(x, num_classes, num_filters=256):
                 kernel_regularizer=l2(5e-4))(y2)
 
     # reg(offset) header
-    y3 = Conv2D(64, 3, padding='same', use_bias=False,
+    y3 = DepthwiseConv2D(64, 5, padding='same', use_bias=False,
                 kernel_initializer='he_normal', kernel_regularizer=l2(5e-4))(x)
     y3 = BatchNormalization()(y3)
     y3 = Activation('relu')(y3)
