@@ -10,7 +10,7 @@ from keras.regularizers import *
 from models.centernet_head import centernet_head
 from models.resnet50 import ResNet50
 from models.hrnet import HRNet
-from models.shufflenet_v2 import ShuffleNetV2
+from models.shufflenet_v2 import ShuffleNetV2_x
 
 
 def nms(heat, kernel=3):
@@ -47,7 +47,7 @@ def CenterNet(input_shape, num_class, backbone='resnet50', k=100, mode="train", 
     elif backbone == 'hrnet':
         backbone_model = HRNet(image_input)
     elif backbone == 'shufflenet_v2':
-        backbone_model = ShuffleNetV2(image_input)
+        backbone_model = ShuffleNetV2_x(image_input, scale=1)
 
     y1, y2, y3 = centernet_head(backbone_model, num_class)
 

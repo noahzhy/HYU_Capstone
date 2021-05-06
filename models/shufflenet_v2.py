@@ -19,13 +19,13 @@ def channel_shuffle(x):
     height, width, channels = x.shape.as_list()[1:]
     channels_per_split = channels // 2
     x = K.reshape(x, [-1, height, width, 2, channels_per_split])
-    x = K.permute_dimensions(x, (0,1,2,4,3))
+    x = K.permute_dimensions(x, (0, 1, 2, 4, 3))
     x = K.reshape(x, [-1, height, width, channels])
     return x
 
 
 def ShuffleNetUnit(inputs, out_channels, stride=1):
-    out_channels = out_channels //2
+    out_channels = out_channels // 2
 
     if stride == 1:
         residual, short_cut = channel_split(inputs)
@@ -34,7 +34,8 @@ def ShuffleNetUnit(inputs, out_channels, stride=1):
     x = Conv2D(out_channels, (1, 1), use_bias=False)(inputs)
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
-    x = DepthwiseConv2D((3, 3), strides=stride, padding='same', use_bias=False)(x)
+    x = DepthwiseConv2D((3, 3), strides=stride,
+                        padding='same', use_bias=False)(x)
     x = BatchNormalization()(x)
     x = Conv2D(out_channels, (1, 1), use_bias=False)(x)
     x = BatchNormalization()(x)
@@ -43,7 +44,8 @@ def ShuffleNetUnit(inputs, out_channels, stride=1):
     if stride == 1:
         ret = Concatenate(axis=-1)([x, residual])
     else:
-        s = DepthwiseConv2D((3, 3), strides=stride, padding='same', use_bias=False)(inputs)
+        s = DepthwiseConv2D((3, 3), strides=stride,
+                            padding='same', use_bias=False)(inputs)
         s = BatchNormalization()(s)
         s = Conv2D(out_channels, (1, 1), use_bias=False)(s)
         s = BatchNormalization()(s)
@@ -99,4 +101,5 @@ if __name__ == '__main__':
     inputs = Input(shape=(224, 224, 3))
     model = ShuffleNetV2_x(inputs, scale=1)
     model.summary()
-    plot_model(model, to_file='ShuffleNetV2.png', show_layer_names=True, show_shapes=True)
+    plot_model(model, to_file='ShuffleNetV2.png',
+               show_layer_names=True, show_shapes=True)
