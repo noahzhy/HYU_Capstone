@@ -133,7 +133,7 @@ def shufflenetV2_x(inputs, scale=1):
 
 if __name__ == '__main__':
     inputs = Input(shape=(224, 224, 3))
-    model = shufflenetV2_x(inputs, scale=0.5)
+    model = shufflenetV2_x(inputs, scale=1)
     model.summary()
     # plot_model(model, to_file='ShuffleNetV2.png',
     #            show_layer_names=True, show_shapes=True)
