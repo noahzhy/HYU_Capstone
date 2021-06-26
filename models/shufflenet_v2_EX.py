@@ -1,13 +1,14 @@
 import keras
-import tensorflow as tf
 
-from keras import backend as K
 from keras.layers import *
 from keras.models import *
 from keras.optimizers import *
 from keras.activations import *
 from tensorflow.keras.utils import plot_model
 
+import tensorflow as tf
+import keras.backend as K
+ 
 
 DEPTHWISE_CONV_KERNEL_SIZE = 5
 
@@ -79,16 +80,11 @@ def stage(x, num_stages, out_channels):
 
 def shufflenet_v2(inputs, out_channels: list, num_class=1000):
     x = conv_bn_relu(inputs, 24, kernel_size=3, strides=2)
-    # x = Conv2D(24, (3, 3), strides=2, padding='same', use_bias=False)(inputs)
-    # x = BatchNormalization()(x)
     x = MaxPooling2D((3, 3), strides=2, padding='same')(x)
 
     x = stage(x, 3, out_channels[0])
-    print(x.shape)
     x = stage(x, 7, out_channels[1])
-    print(x.shape)
     x = stage(x, 3, out_channels[2])
-    print(x.shape)
 
     x = conv_bn_relu(x, out_channels[3], relu="relu")
 
@@ -99,16 +95,16 @@ def shufflenet_v2(inputs, out_channels: list, num_class=1000):
     return model
 
 
-# def shufflenet_head(inputs):
-#     split0, split1, split2 = tf.split(inputs, num_or_size_splits=3, axis=1)
-#     splited_list = [split0, split1, split2]
+def shufflenet_head(inputs, out_channel):
+    split0, split1, split2 = tf.split(inputs, num_or_size_splits=3, axis=1)
+    splited_list = [split0, split1, split2]
 
-#     for i in splited_list:
-#         print(i.shape())
+    for i in splited_list:
+        print(i.shape())
 
-    # x0 = conv_dwconv_conv(top, out_channel, 1, dwconv_ks=5)
+    x0 = conv_dwconv_conv(top, out_channel, 1)
 
-    # out = concatenate()[x, x0]
+    out = concatenate()[x, x0]
 
 
 def shufflenetV2_x(inputs, scale=1):
@@ -127,6 +123,6 @@ def shufflenetV2_x(inputs, scale=1):
 if __name__ == '__main__':
     inputs = Input(shape=(224, 224, 3))
     model = shufflenetV2_x(inputs, scale=1)
-    # model.summary()
+    model.summary()
     # plot_model(model, to_file='ShuffleNetV2.png',
     #            show_layer_names=True, show_shapes=True)

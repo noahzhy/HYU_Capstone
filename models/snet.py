@@ -9,7 +9,7 @@ from keras.activations import *
 from tensorflow.keras.utils import plot_model
 
 
-DEPTHWISE_CONV_KERNEL_SIZE = 3
+DEPTHWISE_CONV_KERNEL_SIZE = 5
 
 
 def channel_split(x, num_splits=2):
@@ -77,7 +77,7 @@ def stage(x, num_stages, out_channels):
     return x
 
 
-def shufflenet_v2(inputs, out_channels: list, num_class=1000):
+def snet(inputs, out_channels: list, num_class=1000):
     x = conv_bn_relu(inputs, 24, kernel_size=3, strides=2)
     # x = Conv2D(24, (3, 3), strides=2, padding='same', use_bias=False)(inputs)
     # x = BatchNormalization()(x)
@@ -87,7 +87,9 @@ def shufflenet_v2(inputs, out_channels: list, num_class=1000):
     x = stage(x, 7, out_channels[1])
     x = stage(x, 3, out_channels[2])
 
-    x = conv_bn_relu(x, out_channels[3], relu="relu")
+
+    if out_channels[3] != 0:
+        x = conv_bn_relu(x, out_channels[3], relu="relu")
 
     x = GlobalAveragePooling2D()(x)
     x = Dense(num_class, activation="softmax")(x)
@@ -96,22 +98,20 @@ def shufflenet_v2(inputs, out_channels: list, num_class=1000):
     return model
 
 
-def shufflenetV2_x(inputs, scale=1):
-    if scale == 0.5:
-        out_channels = [48, 96, 192, 1024]
+def snet_x(inputs, scale=0):
+    if scale == 0:
+        out_channels = [60, 120, 240, 512]
     elif scale == 1:
-        out_channels = [116, 232, 464, 1024]
-    elif scale == 1.5:
-        out_channels = [176, 352, 704, 1024]
+        out_channels = [132, 264, 528, 0]
     elif scale == 2:
-        out_channels = [244, 488, 976, 2048]
+        out_channels = [248, 496, 992, 0]
 
-    return shufflenet_v2(inputs, out_channels=out_channels)
+    return snet(inputs, out_channels=out_channels)
 
 
 if __name__ == '__main__':
     inputs = Input(shape=(224, 224, 3))
-    model = shufflenetV2_x(inputs, scale=1)
-    # model.summary()
+    model = snet_x(inputs, scale=1)
+    model.summary()
     # plot_model(model, to_file='ShuffleNetV2.png',
     #            show_layer_names=True, show_shapes=True)
