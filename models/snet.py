@@ -9,7 +9,41 @@ from keras.activations import *
 from tensorflow.keras.utils import plot_model
 
 
+CEM_FILTER = 245
+NUM_ANCHORS = 5*5
 DEPTHWISE_CONV_KERNEL_SIZE = 5
+
+
+def dwconv_bn_point(inputs, out_channel=256, kernel_size=3, strides=1):
+    x = dwconv_bn(inputs, kernel_size=kernel_size, strides=strides,)
+    x = Conv2D(out_channel, kernel_size=1, strides=1,
+               padding="same", use_bias=True)(x)
+    return x
+
+
+def RPN(inputs):
+    x = dwconv_bn_point(inputs, out_channel=256, kernel_size=5, strides=1)
+    rpn_conf = Conv2D(2*NUM_ANCHORS, kernel_size=1, strides=1,
+               padding="valid", use_bias=True)(x)
+    rpn_pbbox = Conv2D(2*NUM_ANCHORS, kernel_size=1, strides=1,
+                 padding="valid", use_bias=True)(x)
+    return x, rpn_conf, rpn_pbbox
+
+
+def CEM(stage2, stage3, stage4):
+    c4_lat = Conv2D(CEM_FILTER, 1, strides=1, padding="same", use_bias=True)(stage2)
+    c5_lat = Conv2D(CEM_FILTER, 1, strides=1, padding="same", use_bias=True)(stage3)
+    c5_lat = K.resize_images(c5_lat, 2, 2, "channels_last", "bilinear")
+    cglb_lat = K.reshape(stage4, [-1, 1, 1, CEM_FILTER])
+    return c4_lat + c5_lat + cglb_lat
+
+
+def SAM(rpn_in, cem_in):
+    x = Conv2D(CEM_FILTER, 1, strides=1, padding="valid", use_bias=False)(rpn_in)
+    x = BatchNormalization()(x)
+    x = Activation("softmax")(x)
+    x = Multiply()([x, cem_in])
+    return x
 
 
 def channel_split(x, num_splits=2):
@@ -25,13 +59,15 @@ def channel_shuffle(x, groups=2):
 
 
 def conv_bn_relu(inputs, out_channel, kernel_size=1, strides=1, relu="relu"):
-    x = Conv2D(out_channel, kernel_size=kernel_size, strides=strides, padding="same", use_bias=False)(inputs)
+    x = Conv2D(out_channel, kernel_size=kernel_size,
+               strides=strides, padding="same", use_bias=False)(inputs)
     x = bn_relu(x, relu=relu)
     return x
 
 
 def dwconv_bn(inputs, kernel_size=1, strides=1):
-    x = DepthwiseConv2D(kernel_size=kernel_size, strides=strides, padding="same", use_bias=False)(inputs)
+    x = DepthwiseConv2D(kernel_size=kernel_size, strides=strides,
+                        padding="same", depth_multiplier=1, use_bias=False)(inputs)
     x = BatchNormalization()(x)
     return x
 
@@ -62,7 +98,8 @@ def shufflenet_unit(inputs, out_channel, strides=1):
     if strides == 2:
         top = conv_dwconv_conv(inputs, half_channel, strides)
 
-        bottom = dwconv_bn(inputs, kernel_size=DEPTHWISE_CONV_KERNEL_SIZE, strides=strides)
+        bottom = dwconv_bn(
+            inputs, kernel_size=DEPTHWISE_CONV_KERNEL_SIZE, strides=strides)
         bottom = conv_bn_relu(bottom, half_channel, 1, 1, relu="relu")
 
     out = Concatenate()([top, bottom])
@@ -79,39 +116,51 @@ def stage(x, num_stages, out_channels):
 
 def snet(inputs, out_channels: list, num_class=1000):
     x = conv_bn_relu(inputs, 24, kernel_size=3, strides=2)
-    # x = Conv2D(24, (3, 3), strides=2, padding='same', use_bias=False)(inputs)
-    # x = BatchNormalization()(x)
     x = MaxPooling2D((3, 3), strides=2, padding='same')(x)
 
-    x = stage(x, 3, out_channels[0])
-    x = stage(x, 7, out_channels[1])
-    x = stage(x, 3, out_channels[2])
+    s2 = stage(x, 3, out_channels[0])
+    s3 = stage(s2, 7, out_channels[1])
+    s4 = stage(s3, 3, out_channels[2])
 
+    # if out_channels[3] > 0:
+    #     x = conv_bn_relu(x, out_channels[3], relu="relu")
 
-    if out_channels[3] != 0:
-        x = conv_bn_relu(x, out_channels[3], relu="relu")
+    cglb = GlobalAveragePooling2D()(s4)
+    x = Dense(num_class, activation="softmax")(cglb)
 
-    x = GlobalAveragePooling2D()(x)
-    x = Dense(num_class, activation="softmax")(x)
-
-    model = Model(inputs=inputs, outputs=x)
-    return model
+    # model = Model(inputs=inputs, outputs=x)
+    # return model
+    return x, s3, s4, cglb
 
 
 def snet_x(inputs, scale=0):
-    if scale == 0:
-        out_channels = [60, 120, 240, 512]
-    elif scale == 1:
+    # if scale == 0:
+    #     out_channels = [60, 120, 240, 512]
+    if scale == 1:
         out_channels = [132, 264, 528, 0]
-    elif scale == 2:
+    if scale == 2:
         out_channels = [248, 496, 992, 0]
 
     return snet(inputs, out_channels=out_channels)
 
 
-if __name__ == '__main__':
-    inputs = Input(shape=(224, 224, 3))
-    model = snet_x(inputs, scale=1)
+def head(backbone):
+    x, s3, s4, cglb = backbone
+    cem = CEM(s3, s4, cglb)
+    rpn, rpn_conf, rpn_pbbox = RPN(cem)
+    sam = SAM(rpn, cem)
+    return sam, rpn, rpn_conf, rpn_pbbox
+
+
+def build_model():
+    inputs = Input(shape=(320, 320, 3))
+    bb = snet_x(inputs, scale=1)
+    sam, rpn, rpn_conf, rpn_pbbox = head(bb)
+    model = Model(inputs=inputs, outputs=[sam, rpn, rpn_conf, rpn_pbbox])
     model.summary()
+
+
+if __name__ == '__main__':
+    build_model()
     # plot_model(model, to_file='ShuffleNetV2.png',
     #            show_layer_names=True, show_shapes=True)
