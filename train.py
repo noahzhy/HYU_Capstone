@@ -4,79 +4,79 @@ import tensorflow as tf
 from keras.callbacks import *
 from keras.optimizers import *
 
-from models.centernet import CenterNet
-from models.data_gen import Generator
-
-
-def get_random_lines(file_path, random_seed=7):
-    with open(file_path) as f:
-        lines = f.readlines()
-    np.random.seed(random_seed)
-    np.random.shuffle(lines)
-    np.random.seed(None)
-    return lines
+from models.snet_centernet import *
+from models.centernet_training import *
+from tensorflow.keras.utils import plot_model
+# from models.data_gen import Generator
 
 
 def get_classes(classes_path):
     with open(classes_path) as f:
         class_names = f.readlines()
-    return [c.strip() for c in class_names]
+    class_names = [c.strip() for c in class_names]
+    return class_names
 
 
 if __name__ == "__main__":
-    input_shape = [512, 512, 3]
+    classes_path = 'datasets/coco_classes.txt'
+    class_names = get_classes(classes_path)
+    num_classes = len(class_names)
+    annotation_path = 'train.txt'
+    val_split = 0.1
 
-    class_path = 'datasets/voc_classes.txt'
-    class_name = get_classes(class_path)
-    num_class = len(class_name)
-    annotation_path = '2007_train.txt'
-    data_num = get_random_lines(annotation_path)
-    val_split = 0.2
-    num_val = int(len(data_num)*(1-val_split))
-    num_train = len(data_num) * num_val
+    with open(annotation_path) as f:
+        lines = f.readlines()
 
-    backbone = "resnet50"
+    np.random.seed(10101)
+    np.random.shuffle(lines)
+    np.random.seed(None)
+    num_val = int(len(lines)*val_split)
+    num_train = len(lines) - num_val
 
-    learning_rate = 1e-3
-    Batch_size = 128
-    freeze_epoch = 50
-    epoch = 100
+    logging = TensorBoard(log_dir="logs/")
+    checkpoint = ModelCheckpoint('logs/ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
+                                 monitor='val_loss', save_weights_only=True, save_best_only=False, period=10)
+    reduce_lr = ReduceLROnPlateau(
+        monitor='val_loss', factor=0.5, patience=3, verbose=1)
+    early_stopping = EarlyStopping(
+        monitor='val_loss', min_delta=0, patience=10, verbose=1)
+    loss_history = LossHistory("logs/")
 
-    model_path = "datasets/centernet_resnet50_voc.h5"
+    LEARNING_RATE = 1e-3
+    BATCH_SIZE = 32
+    INIT_EPOCH = 0
+    EPOCH = 50
 
-    gen = Generator(batch_size, data_num[:num_train],
-                    data_num[num_train:], input_shape, num_class)
-
-    model = CenterNet(
+    input_shape = (512, 512, 3)
+    gen = Generator(
+        BATCH_SIZE,
+        lines[:num_train],
+        lines[num_train:],
         input_shape,
-        num_classes=num_class,
-        backbone=backbone,
-        mode='train'
-    )
-    model.load_weights(model_path, by_name=True, skip_mismatch=True)
-
-    checkpoint = ModelCheckpoint(
-        'logs/ep{epoch:03d}_loss{loss:.3f}_val_loss{val_loss:.3f}.h5',
-        monitor='val_loss',
-        save_weights_only=True,
-        save_best_only=False,
-        period=1
-    )
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, verbose=1)
-    early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1)
-
-    model.compile(
-        loss={'centernet_loss': lambda y_true, y_pred: y_pred},
-        optimizer=Adam(learning_rate)
+        num_classes
     )
 
-    model.fit_generator(
+    epoch_size = num_train // BATCH_SIZE
+    epoch_size_val = num_val // BATCH_SIZE
+
+    model = snet_x(input_shape, num_class=num_classes, scale=146)
+    plot_model(model, to_file='snet_centernet.png', show_layer_names=True, show_shapes=True)
+    losses = [focal_loss, reg_l1_loss, reg_l1_loss]
+    model.compile(optimizer=Adam(LEARNING_RATE), loss=losses)
+
+    # model.compile(
+    #     loss={'centernet_loss': lambda y_true, y_pred: y_pred},
+    #     optimizer=keras.optimizers.Adam(Lr)
+    # )
+
+    model.fit(
         gen.generate(True),
-        steps_per_epoch=num_train//batch_size,
+        steps_per_epoch=epoch_size,
         validation_data=gen.generate(False),
-        validation_steps=num_val//batch_size,
-        epochs=epoch,
+        validation_steps=epoch_size_val,
+        epochs=EPOCH,
         verbose=1,
-        initial_epoch=freeze_epoch,
-        callbacks=[logging, checkpoint, reduce_lr, early_stopping]
+        initial_epoch=INIT_EPOCH,
+        callbacks=[logging, checkpoint, reduce_lr,
+                   early_stopping, loss_history]
     )

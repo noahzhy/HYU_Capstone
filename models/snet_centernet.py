@@ -4,11 +4,15 @@ import tensorflow as tf
 from keras import backend as K
 from keras.layers import *
 from keras.models import *
+from keras.losses import *
 from keras.optimizers import *
 from keras.activations import *
 from tensorflow.keras.utils import plot_model
 
-from roi_utils import *
+from models.loss import focal_loss, reg_l1_loss
+from models.centernet_training import *
+# from loss import focal_loss, reg_l1_loss
+# from centernet_training import *
 
 
 DEPTHWISE_CONV_KERNEL_SIZE = 5
@@ -25,13 +29,6 @@ def channel_shuffle(x, groups=2):
     x = tf.transpose(x, [0, 1, 2, 4, 3])
     x = tf.reshape(x, [-1, h, w, c])
     return x
-
-
-# def dwconv_bn_point(inputs, out_channel=256, kernel_size=3, strides=1):
-#     x = dwconv_bn(inputs, kernel_size=kernel_size, strides=strides)
-#     x = Conv2D(out_channel, kernel_size=1, strides=1,
-#                padding="same", use_bias=True)(x)
-#     return x
 
 
 def conv_bn_relu(inputs, out_channel, kernel_size=1, strides=1, kernel_initializer="glorot_uniform", bn=True, relu="relu"):
@@ -61,7 +58,7 @@ def conv_dwconv_conv(inputs, out_channel, strides=1, dwconv_ks=DEPTHWISE_CONV_KE
     return x
 
 
-def bn_relu(x, bn=True, relu="relu"):
+def bn_relu(x, bn=True, relu="relu6"):
     if bn:
         x = BatchNormalization()(x)
     if relu == "relu":
@@ -99,8 +96,16 @@ def stage(x, num_stages, out_channels):
     return x
 
 
-def snet(inputs, out_channels: list, num_class=2, feature_channels=128):
-    x = conv_bn_relu(inputs, 24, kernel_size=3, strides=2)
+def snet(input_shape, out_channels: list, num_class=2, max_objects=100, feature_channels=128, training=True):
+    output_size     = input_shape[0] // 4
+    image_input     = Input(shape=input_shape)
+    hm_input        = Input(shape=(output_size, output_size, num_class))
+    wh_input        = Input(shape=(max_objects, 2))
+    reg_input       = Input(shape=(max_objects, 2))
+    reg_mask_input  = Input(shape=(max_objects,))
+    index_input     = Input(shape=(max_objects,))
+
+    x = conv_bn_relu(image_input, 24, kernel_size=3, strides=2)
     out_4 = MaxPooling2D((3, 3), strides=2, padding='same')(x)
 
     out_8 = stage(out_4, 3, out_channels[0])
@@ -130,20 +135,31 @@ def snet(inputs, out_channels: list, num_class=2, feature_channels=128):
     size = conv_bn_relu(features, feature_channels, 3, 1, RNI, None, "relu")
     size = conv_bn_relu(size, 2, 1, 1, RNI, None, "relu")
 
-    out = [center, offset, size]
+    y1 = center
+    y2 = size
+    y3 = offset
 
-    return Model(inputs=inputs, outputs=out)
+    loss_ = Lambda(loss, name='centernet_loss')(
+        [y1, y2, y3, hm_input, wh_input, reg_input, reg_mask_input, index_input])
+    
+    if training:
+        loss_ = Lambda(loss, name='centernet_loss')([y1, y2, y3, hm_input, wh_input, reg_input, reg_mask_input, index_input])
+        model = Model(inputs=[image_input, hm_input, wh_input, reg_input, reg_mask_input, index_input], outputs=[loss_])
+        return model
+    else:
+        detections = Lambda(lambda x: decode(*x, max_objects=max_objects))([y1, y2, y3])
+        prediction_model = Model(inputs=image_input, outputs=detections)
+        return prediction_model
 
 
-def snet_x(inputs, scale=146):
+def snet_x(inputs, num_class=100, scale=146, training=True):
     if scale == 49:
         out_channels = [60, 120, 240, 512]
     if scale == 146:
         out_channels = [132, 264, 528, 0]
     if scale == 535:
         out_channels = [248, 496, 992, 0]
-
-    return snet(inputs, out_channels=out_channels)
+    return snet(inputs, num_class=num_class, out_channels=out_channels, training=training)
 
 
 def SA_module(inputs):
@@ -169,8 +185,11 @@ def build_model():
     model = snet_x(inputs, scale=146)
     model.summary()
 
+    losses = [focal_loss, reg_l1_loss, reg_l1_loss]
+    model.compile(optimizer="adam", loss=losses)
+    return model
+
 
 if __name__ == '__main__':
-    build_model()
-    # plot_model(model, to_file='ShuffleNetV2.png',
-    #            show_layer_names=True, show_shapes=True)
+    model = build_model()
+    plot_model(model, to_file='snet_centernet.png', show_layer_names=True, show_shapes=True)
