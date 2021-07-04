@@ -43,7 +43,7 @@ if __name__ == "__main__":
     loss_history = LossHistory("logs/")
 
     LEARNING_RATE = 1e-3
-    BATCH_SIZE = 32
+    BATCH_SIZE = 128
     INIT_EPOCH = 0
     EPOCH = 50
 
@@ -59,10 +59,11 @@ if __name__ == "__main__":
     epoch_size = num_train // BATCH_SIZE
     epoch_size_val = num_val // BATCH_SIZE
 
-    model = snet_x(input_shape, num_class=num_classes, scale=146)
+    model = snet_x(input_shape, num_class=num_classes, scale=49)
     plot_model(model, to_file='snet_centernet.png', show_layer_names=True, show_shapes=True)
     losses = [focal_loss, reg_l1_loss, reg_l1_loss]
     model.compile(optimizer=Adam(LEARNING_RATE), loss=losses)
+    model.summary()
 
     # model.compile(
     #     loss={'centernet_loss': lambda y_true, y_pred: y_pred},
