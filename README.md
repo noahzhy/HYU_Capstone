@@ -12,7 +12,7 @@ The MOT task is a kind of object-ness detection, most of MOT task that detect on
 
 #### Light-head
 
-We choosen anchor-free network that centerNet, in centerNet paper that using ResNet-18 as backbone, but ResNet series is not friendly to deploy on mobile device, model size of ResNet series is too big to deploy.
+We chosen anchor-free network that centerNet, in centerNet paper that using ResNet-18 as backbone, but ResNet series is not friendly to deploy on mobile device, model size of ResNet series is too big to deploy.
 
 In addition, MOT task is not need to care the small objects, so we decide to using large receptive field.
 
