@@ -22,7 +22,19 @@ In the actual project such as license plate recognition, the task depends on the
 
 
 
+## Backbone(shufflenet) architecture
 
+![network structure](images/shufflenet_v2.png)
+
+## Shufflenet v2 1.5x + FPN
+
+
+
+![architecture](C:\Projects\HYU_Capstone\architecture.jpg)
+
+## Demo
+
+![demo](C:\Projects\HYU_Capstone\demo.gif)
 
 ## Goal
 

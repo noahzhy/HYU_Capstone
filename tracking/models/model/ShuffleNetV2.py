@@ -27,18 +27,12 @@ def conv_1x1_bn(inp, oup):
 
 def channel_shuffle(x, groups):
     batchsize, num_channels, height, width = x.data.size()
-
     channels_per_group = num_channels // groups
-
     # reshape
-    x = x.view(batchsize, groups,
-               channels_per_group, height, width)
-
+    x = x.view(batchsize, groups, channels_per_group, height, width)
     x = torch.transpose(x, 1, 2).contiguous()
-
     # flatten
     x = x.view(batchsize, -1, height, width)
-
     return x
 
 
@@ -208,12 +202,13 @@ if __name__ == "__main__":
             'stage_repeats': [4, 8, 4],
             'groups': 2,
             'image_size': [640, 640],
-            'width_mult': 1.5,  # 缩放系数
+            'width_mult': 1.5,  # 0.5 1.0 1.5, bug on 2.0
             'n_class': 20
         }
     }
 
     model = ShuffleNetV2(cfg_shufflev2['ShuffleNetV2'])
+    print(model)
     x = torch.randn(1, 3, 640, 640)
     y = model(x)
     print(y.shape)

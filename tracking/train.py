@@ -86,7 +86,6 @@ def train(model, train_loader):
         for img, target in tqdm_train:
             img = img.cuda()
             target = target.cuda()
-
             outputs = model(img)
             priorbox = PriorBox(CFG)
             with torch.no_grad():
@@ -100,7 +99,7 @@ def train(model, train_loader):
             tqdm_train.set_description(
                 f'epoch: {epoch}, total loss: {loss.item()}')
         state = {'net': model.state_dict(), 'epoch': epoch}
-        torch.save(state, 'test.pth')
+        torch.save(state, 'epoch_{}_loss_{}.pth'.format(epoch, loss.item()))
 
 
 if __name__ == '__main__':
@@ -110,8 +109,8 @@ if __name__ == '__main__':
     print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
     print('{:<30}  {:<8}'.format('Number of parameters: ', params))
     # print(model)
-    quit()
-    # test = Gtdataset()
-    # trainloader = DataLoader(test, batch_size=8, shuffle=True)
-    # train(model, trainloader)
-    # predict(model, 'source/test.jpg', 'source/result_img.png')
+    # quit()
+    test = Gtdataset()
+    trainloader = DataLoader(test, batch_size=8, shuffle=True)
+    train(model, trainloader)
+    predict(model, 'source/test.jpg', 'source/result_img.png')
