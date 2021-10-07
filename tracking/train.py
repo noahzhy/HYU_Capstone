@@ -25,6 +25,7 @@ from ptflops import get_model_complexity_info
 
 
 CFG = cfg_shufflev2
+# CFG = cfg_re50
 nms_threshold = 0.4
 vis_thres = 0.6
 # torch.cuda.set_device(5)
@@ -109,8 +110,8 @@ if __name__ == '__main__':
     print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
     print('{:<30}  {:<8}'.format('Number of parameters: ', params))
     # print(model)
-    # quit()
-    test = Gtdataset()
-    trainloader = DataLoader(test, batch_size=8, shuffle=True)
-    train(model, trainloader)
-    predict(model, 'source/test.jpg', 'source/result_img.png')
+    quit()
+    # test = Gtdataset()
+    # trainloader = DataLoader(test, batch_size=8, shuffle=True)
+    # train(model, trainloader)
+    # predict(model, 'source/test.jpg', 'source/result_img.png')

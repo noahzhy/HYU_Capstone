@@ -26,15 +26,38 @@ In the actual project such as license plate recognition, the task depends on the
 
 ![network structure](images/shufflenet_v2.png)
 
+
+
 ## Shufflenet v2 1.5x + FPN
 
-
-
 ![architecture](C:\Projects\HYU_Capstone\architecture.jpg)
+
+
+
+## Comparison
+
+| Architecture      | Parameters (M) | MAC (G) | Inference Time |
+| ----------------- | -------------- | ------- | -------------- |
+|                   |                |         |                |
+| RetinaTrack       | 32.53          | 142.13  | 70ms           |
+| ShuffleTrack(our) | 10.18          | 109.72  | -              |
+
+
+
+## Results（Waymo dataset）
+
+|                   | MOTA  | mAP   |
+| ----------------- | ----- | ----- |
+|                   |       |       |
+| RetinaTrack       | 39.12 | 38.24 |
+| ShuffleTrack(our) |       |       |
+
+
 
 ## Demo
 
 ![demo](C:\Projects\HYU_Capstone\demo.gif)
+
 
 ## Goal
 
