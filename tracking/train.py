@@ -21,11 +21,7 @@ from utils.box_utils import decode
 from utils.multibox_loss import MultiBoxLoss
 from utils.prior_box import PriorBox
 
-from ptflops import get_model_complexity_info
-
-
 CFG = cfg_shufflev2
-# CFG = cfg_re50
 nms_threshold = 0.4
 vis_thres = 0.6
 # torch.cuda.set_device(5)
@@ -52,23 +48,24 @@ def predict(model, img_path, save_path):
         boxes = decode(loc.squeeze(0), priors, cfg['variance'])
         boxes = boxes * scale
         conf = F.softmax(conf, dim=-1)
+        # print(conf)
         scores = conf.squeeze(0).cpu().numpy()[:, 1]
         inds = np.where(scores > 0.6)[0]
         boxes = boxes[inds]
+        # print(boxes)
         scores = scores[inds]
         scores = torch.from_numpy(scores).cuda().unsqueeze(1)
         classifier = F.softmax(classifier, dim=-1).squeeze(0)
         classifier = classifier.data.max(-1, keepdim=True)[1]
+        # print(inds)
         classifier = classifier[inds].float()
         dets = torch.cat((boxes, scores, classifier), 1)
         i = torchvision.ops.boxes.nms(dets[:, :4], dets[:, 5], nms_threshold)
         dets = dets[i]
     for b in dets:
-        print(b)
         if b[4] < vis_thres:
             continue
         text = "car: {:d}".format(int(b[5]))
-        print(b)
         b = list(map(int, b))
         cv2.rectangle(img_raw, (b[0], b[1]), (b[2], b[3]), (0, 0, 255), 2)
         cx = b[0]
@@ -104,14 +101,10 @@ def train(model, train_loader):
 
 
 if __name__ == '__main__':
+    test = Gtdataset()
+    trainloader = DataLoader(test, batch_size=24, shuffle=True)
     model = RetinaTrackNet(cfg=CFG).cuda()
-    macs, params = get_model_complexity_info(model, (3, 640, 640), as_strings=True,
-                                            print_per_layer_stat=True, verbose=True)
-    print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
-    print('{:<30}  {:<8}'.format('Number of parameters: ', params))
-    # print(model)
-    quit()
-    # test = Gtdataset()
-    # trainloader = DataLoader(test, batch_size=8, shuffle=True)
-    # train(model, trainloader)
-    # predict(model, 'source/test.jpg', 'source/result_img.png')
+    # check = torch.load("test.pth")
+    # model.load_state_dict(check["net"])
+    train(model, trainloader)
+    # predict(model, 'source/000001.jpg', 'source/result_img.png')

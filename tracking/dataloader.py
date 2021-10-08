@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader, Dataset
 
 
 class Gtdataset(Dataset):
-    def __init__(self, data_path='../MOT17/train'):
+    def __init__(self, data_path='../../MOT17/train'):
         self.images = []
         self.target = []
         for vedio in os.listdir(data_path):

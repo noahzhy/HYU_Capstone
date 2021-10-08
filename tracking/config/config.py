@@ -9,7 +9,7 @@ cfg_re50 = {
     'loc_weight': 2.0,
     'gpu_train': False,
     'batch_size': 24,
-    'ngpu': 1,
+    'ngpu': 4,
     'epoch': 100,
     'decay1': 70,
     'decay2': 90,
@@ -19,7 +19,6 @@ cfg_re50 = {
     'in_channel': 256,
     'out_channel': 256
 }
-
 cfg_shuffle = {
     'name': 'ShuffleNetG2',
     'min_sizes': [[16, 32], [64, 128], [256, 512]],
@@ -30,7 +29,7 @@ cfg_shuffle = {
     'loc_weight': 2.0,
     'gpu_train': False,
     'batch_size': 24,
-    'ngpu': 1,
+    'ngpu': 4,
     'epoch': 100,
     'decay1': 70,
     'decay2': 90,
@@ -57,12 +56,12 @@ cfg_shufflev2 = {
     'loc_weight': 2.0,
     'gpu_train': False,
     'batch_size': 8,
-    'ngpu': 1,
+    'ngpu': 2,
     'epoch': 100,
     'image_size': [640,640],
     'pretrain': False,
     'ShuffleNetV2_return_layers':{'layer1': 1, 'layer2': 2, 'layer3': 3},
-    'in_channel': 48,
+    'in_channel': 58,
     'out_channel': 256,
     'ShuffleNetV2' : {
         'out_planes': [200, 400, 800],
@@ -70,6 +69,6 @@ cfg_shufflev2 = {
         'groups': 2,
         'image_size': [640,640],
         'width_mult':1.5,
-        'n_class' :10
+        'n_class' :12
     }
 }
