@@ -104,6 +104,7 @@ if __name__ == '__main__':
     test = Gtdataset()
     trainloader = DataLoader(test, batch_size=24, shuffle=True)
     model = RetinaTrackNet(cfg=CFG).cuda()
+    # model = torch.nn.DataParallel(model)
     # check = torch.load("test.pth")
     # model.load_state_dict(check["net"])
     train(model, trainloader)
