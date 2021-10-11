@@ -132,3 +132,8 @@ if __name__ == '__main__':
     inpunt = torch.randn(1, 3, 640, 640)
     cls_heads, loc_heads, emb_heads = model(inpunt)
     print(cls_heads.shape, loc_heads.shape, emb_heads.shape)
+    # from ptflops import get_model_complexity_info
+    # macs, params = get_model_complexity_info(model, (3, 640, 640), as_strings=True,
+    #                                         print_per_layer_stat=True, verbose=True)
+    # print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
+    # print('{:<30}  {:<8}'.format('Number of parameters: ', params))

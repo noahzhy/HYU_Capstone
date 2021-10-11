@@ -39,18 +39,17 @@ We used the shufflenet v2 1.5x as backbone to extract feature, connect with feat
 | Architecture      | Parameters (M) | MAC (G) | Inference Time |
 | ----------------- | -------------- | ------- | -------------- |
 |                   |                |         |                |
-| RetinaTrack       | 32.53          | 142.13  | 70ms           |
-| ShuffleTrack(our) | 10.18          | 109.72  | -              |
-
+| RetinaTrack       | 32.53          | 142.1   | 70ms           |
+| ShuffleTrack(our) | 10.19          | 109.9   | 20ms*          |
 
 
 ## Results (MOT17)
 
-|Model|MOTA|TP|FP|ID switches|mAP|Inference time (ms/frame)|
-|----- | ----- | ----- |------| ----- | ----- |---|
-|Tracktor|35.30|106006|15617|16652|36.17|45|
-|Tracktor++|37.94|112801|15642|10370|36.17|2645|
-|RetinaTrack|39.19|112025|11669|5712|38.24|70|
+| Model             |MOTA|TP|FP|ID switches|mAP|Inference time (ms/frame)|
+| ----------------- | ----- | ----- |------| ----- | ----- |---|
+| Tracktor          |35.30|106006|15617|16652|36.17|45|
+| Tracktor++        |37.94|112801|15642|10370|36.17|2645|
+| RetinaTrack       |39.19|112025|11669|5712|38.24|70|
 | ShuffleTrack(our) |       |       | | | ||
 
 
