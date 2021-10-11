@@ -51,6 +51,7 @@ class ShuffleTrackNet(nn.Module):
             in_channels_stage2 * 8,
         ]
         out_channels = cfg['out_channel']
+        ids = cfg['ids']
         self.fpn = FPN(in_channels_list, out_channels)
         self.ssh1 = SSH(out_channels, out_channels)
         self.ssh2 = SSH(out_channels, out_channels)
@@ -70,7 +71,7 @@ class ShuffleTrackNet(nn.Module):
         self.emb_heads = make_emb_head(inp=out_channels, fpnNum=len(
             in_channels_list), anchorNum=anchorNum)
         # classifier
-        self.classifier = nn.Linear(256, 7)
+        self.classifier = nn.Linear(256, ids)
 
     def forward(self, inputs):
         out = self.body(inputs)
@@ -95,12 +96,12 @@ class ShuffleTrackNet(nn.Module):
                 cls_task_feature = self.cls_task(per_anchor_feature)
                 loc_task_feature = self.loc_task(per_anchor_feature)
                 emb_task_feature = self.emb_task(per_anchor_feature)
-                # cls feature,only one class but with background total class is two
+                # cls feature, object and background
                 cls_head = self.cls_heads[i *
                                           len(per_fpn_features) + j](cls_task_feature)
                 cls_head = cls_head.permute(0, 2, 3, 1).contiguous().view(
                     cls_head.shape[0], -1, 2)
-                # loc frature,(x,y,w,h)
+                # loc (x,y,w,h)
                 loc_head = self.loc_heads[i *
                                           len(per_fpn_features) + j](loc_task_feature)
                 loc_head = loc_head.permute(0, 2, 3, 1).contiguous().view(

@@ -44,7 +44,7 @@ class Gtdataset(Dataset):
         img = cv2.resize(img, (640, 640))
         targets = self.target[index]
         targets = torch.from_numpy(targets).float()
-        inpunt = img.transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+        inpunt = img.transpose(2, 0, 1)  # BGR to RGB
         inpunt = np.ascontiguousarray(inpunt)
         inpunt = torch.from_numpy(inpunt)
         inpunt = inpunt.cuda().float() / 255.0
@@ -91,7 +91,7 @@ class Detdataset(Dataset):
         img = cv2.resize(img, (640, 640))
         targets = self.target[index]
         targets = torch.from_numpy(targets).float()
-        inpunt = img.transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+        inpunt = img.transpose(2, 0, 1)  # BGR to RGB
         inpunt = np.ascontiguousarray(inpunt)
         inpunt = torch.from_numpy(inpunt)
         inpunt = inpunt.cuda().float() / 255.0
@@ -103,9 +103,7 @@ class Detdataset(Dataset):
 
 class Shuffledataset(Dataset):
     def __init__(self, data_path='source'):
-        # 定义好 image 的路径
         self.data_path = data_path
-
         self.images = []
         self.target = []
         for f in os.listdir(data_path):
@@ -119,7 +117,7 @@ class Shuffledataset(Dataset):
         img = cv2.resize(img, (640, 640))
         targets = np.loadtxt(os.path.join(self.data_path, self.target[index]))
         targets = torch.from_numpy(targets).float()
-        inpunt = img.transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+        inpunt = img.transpose(2, 0, 1)  # BGR to RGB
         inpunt = np.ascontiguousarray(inpunt)
         inpunt = torch.from_numpy(inpunt)
         inpunt = inpunt.cuda().float() / 255.0

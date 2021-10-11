@@ -21,6 +21,7 @@ from utils.box_utils import decode
 from utils.multibox_loss import MultiBoxLoss
 from utils.prior_box import PriorBox
 
+
 CFG = cfg_shufflev2
 nms_threshold = 0.4
 vis_thres = 0.6
@@ -103,7 +104,7 @@ def train(model, train_loader):
 if __name__ == '__main__':
     test = Gtdataset()
     trainloader = DataLoader(test, batch_size=24, shuffle=True)
-    model = ShuffleTrackNet(cfg=CFG)
+    model = ShuffleTrackNet(cfg=CFG).cuda()
     # print(model)
     # model = torch.nn.DataParallel(model)
     # check = torch.load("test.pth")

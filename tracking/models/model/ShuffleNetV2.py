@@ -176,6 +176,7 @@ if __name__ == "__main__":
         'ngpu': 4,
         'epoch': 100,
         'pretrain': False,
+        'ids': 50, #7
         'ShuffleNetV2_return_layers': {'layer1': 1, 'layer2': 2, 'layer3': 3},
         'in_channel': 100,
         'out_channel': 256,

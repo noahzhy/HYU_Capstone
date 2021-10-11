@@ -1,4 +1,3 @@
-from __future__ import print_function
 import argparse
 import torch
 import torch.backends.cudnn as cudnn
@@ -13,6 +12,7 @@ import torchvision
 import parser
 import torch.nn.functional as F
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-m', '--trained_model', default='demo.pth',
                     type=str, help='Trained state_dict file path to open')
@@ -21,6 +21,7 @@ parser.add_argument('--nms_threshold', default=0.4, type=float, help='nms_thresh
 parser.add_argument('--vis_thres', default=0.6, type=float, help='visualization_threshold')
 parser.add_argument('-image', default='source/test.jpg', help='test image path')
 args = parser.parse_args()
+
 
 if __name__ == '__main__':
     cfg = cfg_shuffle
