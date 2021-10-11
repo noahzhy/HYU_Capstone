@@ -1,6 +1,7 @@
 import torch
 import sys
-sys.path.append('/mnt/data/RetinaTrack')
+sys.path.append('./')
+
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable

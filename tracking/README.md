@@ -47,7 +47,7 @@ Appreciate the great work from the following repositories:
 
 ## 使用 ShuffleNet
 ```python
-model = RetinaTrackNet(cfg=cfg_shuffle).cuda()
+model = ShuffleTrackNet(cfg=cfg_shuffle).cuda()
 #配置使用cfg_shuffle即可
 ```
 

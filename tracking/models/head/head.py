@@ -1,10 +1,11 @@
+import math
 import os
 from collections import OrderedDict
+
 import torch
-import math
 import torch.nn as nn
-from models.neck.neck import conv_bn,conv_bn1X1
-__all__ = ['RetinaTrackClassHead','RetinaTrackBBoxHead','RetinaTrackEmbedHead']
+from models.neck.neck import conv_bn, conv_bn1X1
+
 
 def task_specific_cls(inp, oup, stride = 1, leaky = 0, m2 = 1):
     peranchor_feature = nn.ModuleList()

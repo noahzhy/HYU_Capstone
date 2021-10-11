@@ -1,14 +1,12 @@
 # HYU_Capstone
 
-Our goal is to achieve the real-time (high fps) and better IDF1 score on MOT task, and try to deploy on the mobile devices or embedding devices. 
+Our goal is to achieve the real-time (high fps) and better IDF1 score on MOT task, and try to deploy on the mobile devices. 
 
-
-
-In the actual project, it is often required to deploy on the ARM's devices which the CPU-only environment. Therefore, we decided to design the lightweight real-time multi-object tracking architecture. 
+In the actual project, it is often required to deploy on the devices which the CPU-only environment. Therefore, we decided to design the lightweight real-time multi-object tracking architecture.
 
  
 
-The first lightweight architecture that come to mind are shufflenet and peleenet. They all achieved the real time on the ARM's platform. 
+The first lightweight architecture that come to mind is shufflenet. 
 
 
 
@@ -30,7 +28,9 @@ In the actual project such as license plate recognition, the task depends on the
 
 ## Shufflenet v2 1.5x + FPN
 
-![architecture](C:\Projects\HYU_Capstone\architecture.jpg)
+![architecture](images/architecture.png)
+
+We used the shufflenet v2 1.5x as backbone to extract feature, connect with feature map of stage2, stage3, stage4 from backbone as FPN. 
 
 
 
@@ -44,24 +44,25 @@ In the actual project such as license plate recognition, the task depends on the
 
 
 
-## Results（Waymo dataset）
+## Results (MOT17)
 
-|                   | MOTA  | mAP   |
-| ----------------- | ----- | ----- |
-|                   |       |       |
-| RetinaTrack       | 39.12 | 38.24 |
-| ShuffleTrack(our) |       |       |
+|Model|MOTA|TP|FP|ID switches|mAP|Inference time (ms/frame)|
+|----- | ----- | ----- |------| ----- | ----- |---|
+|Tracktor|35.30|106006|15617|16652|36.17|45|
+|Tracktor++|37.94|112801|15642|10370|36.17|2645|
+|RetinaTrack|39.19|112025|11669|5712|38.24|70|
+| ShuffleTrack(our) |       |       | | | ||
 
 
 
 ## Demo
 
-![demo](C:\Projects\HYU_Capstone\demo.gif)
+![demo](images/demo.gif)
 
 
 ## Goal
 
-To get better IDF1/ID-switch score on MOT task, and try to deploy on the mobile phone or embedding device.
+To get better IDF1/ID-switch score on MOT task, and try to deploy on the mobile device.
 
 
 
@@ -95,10 +96,6 @@ Then, we choosen shuffleNetV2 as backbone now and reappear it via Keras.
 ![refer block of shuffleNet](images/shufflenet_v2_block.png)
 
 ## Reference
-
-* [FairMOT](references/FairMOT.pdf)
-
-* [centerNet](references\CenterNet.pdf)
 
 * [shuffleNetV2](references/shuffleNetV2.pdf)
 

@@ -16,7 +16,7 @@ from tqdm import tqdm
 
 from config.config import cfg_re50, cfg_shuffle, cfg_shufflev2
 from dataloader import Detdataset, Gtdataset, Shuffledataset
-from models.model.retinatrack import RetinaTrackNet
+from models.model.shuffletrack import ShuffleTrackNet
 from utils.box_utils import decode
 from utils.multibox_loss import MultiBoxLoss
 from utils.prior_box import PriorBox
@@ -103,7 +103,8 @@ def train(model, train_loader):
 if __name__ == '__main__':
     test = Gtdataset()
     trainloader = DataLoader(test, batch_size=24, shuffle=True)
-    model = RetinaTrackNet(cfg=CFG).cuda()
+    model = ShuffleTrackNet(cfg=CFG)
+    # print(model)
     # model = torch.nn.DataParallel(model)
     # check = torch.load("test.pth")
     # model.load_state_dict(check["net"])

@@ -19,6 +19,7 @@ cfg_re50 = {
     'in_channel': 256,
     'out_channel': 256
 }
+
 cfg_shuffle = {
     'name': 'ShuffleNetG2',
     'min_sizes': [[16, 32], [64, 128], [256, 512]],

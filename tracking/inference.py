@@ -5,7 +5,7 @@ import torch.backends.cudnn as cudnn
 import numpy as np
 from utils.prior_box import PriorBox
 import cv2
-from models.model.retinatrack import RetinaTrackNet
+from models.model.shuffletrack import ShuffleTrackNet
 from config.config import cfg_re50,cfg_shuffle
 from utils.box_utils import decode
 import time
@@ -13,7 +13,7 @@ import torchvision
 import parser
 import torch.nn.functional as F
 
-parser = argparse.ArgumentParser(description='RetinaTrack')
+parser = argparse.ArgumentParser()
 parser.add_argument('-m', '--trained_model', default='demo.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--confidence_threshold', default=0.6, type=float, help='confidence_threshold')
@@ -24,7 +24,7 @@ args = parser.parse_args()
 
 if __name__ == '__main__':
     cfg = cfg_shuffle
-    model = RetinaTrackNet(cfg=cfg).cuda()
+    model = ShuffleTrackNet(cfg=cfg).cuda()
     param = torch.load('demo.pth', map_location=lambda storage, loc: storage.cuda('cuda:0'))
     model.load_state_dict(param)
     model.eval()
