@@ -79,7 +79,7 @@ def predict(model, img_path, save_path):
 def train(model, train_loader):
     optimizer = optim.SGD(model.parameters(), lr=0.001,
                           momentum=0.9, weight_decay=5e-4)
-    criterion = MultiBoxLoss(2, 0.35, True, 0, True, 7, 0.35, False)
+    criterion = MultiBoxLoss(2, 0.35, True, 0, True, 50, 0.35, False)
     for epoch in range(1, CFG['epoch']+1):
         tqdm_train = tqdm(train_loader)
         for img, target in tqdm_train:
