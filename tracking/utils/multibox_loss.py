@@ -1,7 +1,6 @@
 import torch
 import sys
-sys.path.append('./')
-
+sys.path.append('/mnt/data/RetinaTrack')
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
@@ -10,76 +9,30 @@ import copy
 import numpy as np
 import torchvision
 
-
-class FocalLoss(nn.Module):
-    r"""
-        This criterion is a implemenation of Focal Loss, which is proposed in 
-        Focal Loss for Dense Object Detection.
-
-            Loss(x, class) = - \alpha (1-softmax(x)[class])^gamma \log(softmax(x)[class])
-
-        The losses are averaged across observations for each minibatch.
-
-        Args:
-            alpha(1D Tensor, Variable) : the scalar factor for this criterion
-            gamma(float, double) : gamma > 0; reduces the relative loss for well-classiﬁed examples (p > .5), 
-                                   putting more focus on hard, misclassiﬁed examples
-            size_average(bool): By default, the losses are averaged over observations for each minibatch.
-                                However, if the field size_average is set to False, the losses are
-                                instead summed for each minibatch.
-
-
-    """
-    def __init__(self, class_num, alpha=None, gamma=2, size_average=True):
-        super(FocalLoss, self).__init__()
-        if alpha is None:
-            self.alpha = Variable(torch.ones(class_num, 1))
-        else:
-            if isinstance(alpha, Variable):
-                self.alpha = alpha
-            else:
-                self.alpha = Variable(alpha)
-        self.gamma = gamma
-        self.class_num = class_num
-        self.size_average = size_average
-
-    def forward(self, inputs, targets):
-        N = inputs.size(0)
-        C = inputs.size(1)
-        P = F.softmax(inputs)
-
-        class_mask = inputs.data.new(N, C).fill_(0)
-        class_mask = Variable(class_mask)
-        ids = targets.view(-1, 1)
-        class_mask.scatter_(1, ids.data, 1.)
-        #print(class_mask)
-
-
-        if inputs.is_cuda and not self.alpha.is_cuda:
-            self.alpha = self.alpha.cuda()
-        alpha = self.alpha[ids.data.view(-1)]
-
-        probs = (P*class_mask).sum(1).view(-1,1)
-
-        log_p = probs.log()
-        #print('probs size= {}'.format(probs.size()))
-        #print(probs)
-
-        batch_loss = -alpha*(torch.pow((1-probs), self.gamma))*log_p 
-        #print('-----bacth_loss------')
-        #print(batch_loss)
-
-
-        if self.size_average:
-            loss = batch_loss.mean()
-        else:
-            loss = batch_loss.sum()
-        return loss
-
-
 class MultiBoxLoss(nn.Module):
+    """SSD Weighted Loss Function
+    Compute Targets:
+        1) Produce Confidence Target Indices by matching  ground truth boxes
+           with (default) 'priorboxes' that have jaccard index > threshold parameter
+           (default threshold: 0.5).
+        2) Produce localization target by 'encoding' variance into offsets of ground
+           truth boxes and their matched  'priorboxes'.
+        3) Hard negative mining to filter the excessive number of negative examples
+           that comes with using a large number of default bounding boxes.
+           (default negative:positive ratio 3:1)
+    Objective Loss:
+        L(x,c,l,g) = (Lconf(x, c) + αLloc(x,l,g)) / N
+        Where, Lconf is the CrossEntropy Loss and Lloc is the SmoothL1 Loss
+        weighted by α which is set to 1 by cross val.
+        Args:
+            c: class confidences,
+            l: predicted boxes,
+            g: ground truth boxes
+            N: number of matched default boxes
+        See: https://arxiv.org/pdf/1512.02325.pdf for more details.
+    """
 
-    def __init__(self, num_classes, overlap_thresh, prior_for_matching, bkg_label, neg_mining, neg_pos, neg_overlap, encode_target, is_cuda = True):
+    def __init__(self, num_classes, overlap_thresh, prior_for_matching, bkg_label, neg_mining, neg_pos, neg_overlap, encode_target,is_cuda = True):
         super(MultiBoxLoss, self).__init__()
         self.num_classes = num_classes
         self.threshold = overlap_thresh
@@ -97,8 +50,11 @@ class MultiBoxLoss(nn.Module):
         """Multibox Loss
         Args:
             predictions (tuple): A tuple containing loc preds, conf preds, classifier pred,
+            priors: priors boxes from SSD net.
+            targets (tensor): Ground truth boxes and labels for a batch,
             shape: [batch_size,num_objs,5] (batch_index,classification,xc,yc,w,h,ids).
         """
+
         loc_data, conf_data, classifier_data = predictions
         #print('&&&',loc_data.shape,classifier_data.shape)
         priors = priors
@@ -136,7 +92,7 @@ class MultiBoxLoss(nn.Module):
         loss_l = F.smooth_l1_loss(loc_p, loc_t, reduction='sum')
 
         pos_idx = pos.unsqueeze(pos.dim()).expand_as(classifier_data)
-        aa_p = classifier_data[pos_idx].view(-1, 547) # ids
+        aa_p = classifier_data[pos_idx].view(-1, 547)
         classifier_t = classifier_t[pos].long()
         id_loss = self.idLoss(aa_p,classifier_t)
         # Compute max conf across batch for hard negative mining

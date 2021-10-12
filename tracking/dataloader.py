@@ -22,19 +22,13 @@ class Gtdataset(Dataset):
                 if frame not in maps:
                     maps[frame] = []
                 if data[6]:
-                    data[2] = data[2]/1920
-                    data[3] = data[3]/1080
-                    data[4] = (data[2]+data[4])/1920
-                    data[5] = (data[3]+data[5])/1080
-
-                    maps[frame].append([
-                        data[0],# frame
-                        data[7],# cls
-                        data[2],data[3],data[4],data[5],
-                        data[1],# ids
-                    ])
-                    # maps[frame].append(data[0:6]+data[7:8])
-                    # print(data[0:6]+data[7:8])
+                    data[2] = data[2]/1920+data[4]/1920/2
+                    data[3] = data[3]/1080+data[5]/1080/2
+                    data[4] = data[4]/1920
+                    data[5] = data[5]/1080
+                    res_data = data[0:6]+data[7:8]
+                    res_data[1], res_data[6] = res_data[6], res_data[1]
+                    maps[frame].append(res_data)
             for img in os.listdir(os.path.join(vedio_path, 'img1')):
                 if int(img.split('.')[0]) in maps:
                     self.images.append(os.path.join(vedio_path, 'img1', img))
@@ -46,6 +40,7 @@ class Gtdataset(Dataset):
                     self.target.append(data[0:7])
 
     def __getitem__(self, index):
+
         img = cv2.imread(self.images[index])
         img = cv2.resize(img, (640, 640))
         targets = self.target[index]
@@ -69,22 +64,20 @@ class Detdataset(Dataset):
             f = open(os.path.join(vedio_path, 'det', 'det.txt'), 'r')
             txt = f.readlines()
             maps = {}
-
             for str_data in txt:
                 data = str_data.split(',')
                 data = list(map(float, data))
                 frame = data[0]
                 if frame not in maps:
                     maps[frame] = []
-                data[2] = data[2]/1920
-                data[3] = data[3]/1080
+                data[2] = data[2]/1920+data[4]/1920/2
+                data[3] = data[3]/1080+data[5]/1080/2
                 data[4] = data[4]/1920
                 data[5] = data[5]/1080
+                data[1], data[6] = data[6], data[1]
                 maps[frame].append(data[0:7])
-
             for img in os.listdir(os.path.join(vedio_path, 'img1')):
                 if int(img.split('.')[0]) in maps:
-                    # for t in maps[int(img.split('.')[0])]:
                     self.images.append(os.path.join(vedio_path, 'img1', img))
                     data = np.array(maps[int(img.split('.')[0])])
                     b = np.zeros((1, 7))

@@ -7,11 +7,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models._utils as _utils
 import torchvision.models.detection.backbone_utils as backbone_utils
-
-from config.config import cfg_re50, cfg_shuffle, cfg_shufflev2
-from models.head.head import *
+from config.config import cfg_re50, cfg_shuffle, cfg_shufflev2, cfg_shuffle_ex
+from models.head.head import (make_cls_head, make_emb_head, make_loc_head,
+                              task_specific_cls, task_specific_emb,
+                              task_specific_loc)
 from models.model.ShuffleNet import ShuffleNetG2
 from models.model.ShuffleNetV2 import ShuffleNetV2
+from models.model.ShuffleNet_EX import ShuffleNetV2_EX
 from models.neck.neck import FPN as FPN
 from models.neck.neck import SSH as SSH
 from models.neck.neck import task_shared
@@ -20,6 +22,10 @@ from models.neck.neck import task_shared
 class ShuffleTrackNet(nn.Module):
 
     def __init__(self, cfg=None, phase='train'):
+        """
+        :param cfg:  Network related settings.
+        :param phase: train or test.
+        """
         super(ShuffleTrackNet, self).__init__()
         self.phase = phase
         backbone = None
@@ -42,7 +48,14 @@ class ShuffleTrackNet(nn.Module):
             cfg['in_channel'] = ch_list[int(
                 cfg['ShuffleNetV2']['width_mult']*2-1)]
             pass
+        elif cfg['name'] == 'ShuffleNet_EX':
+            backbone = ShuffleNetV2_EX()
+            cfg['in_channel'] = [48, 128, 256, 512]
+            self.body = _utils.IntermediateLayerGetter(
+                backbone, cfg['ShuffleNet_EX_return_layers'])
+            
 
+        # not total anchor,indicate per stage anchors
         anchorNum = cfg['anchorNum_per_stage']
         in_channels_stage2 = cfg['in_channel']
         in_channels_list = [
@@ -50,8 +63,9 @@ class ShuffleTrackNet(nn.Module):
             in_channels_stage2 * 4,
             in_channels_stage2 * 8,
         ]
+        # print(in_channels_list)
+        in_channels_list = [128, 256, 512]
         out_channels = cfg['out_channel']
-        ids = cfg['ids']
         self.fpn = FPN(in_channels_list, out_channels)
         self.ssh1 = SSH(out_channels, out_channels)
         self.ssh2 = SSH(out_channels, out_channels)
@@ -70,8 +84,9 @@ class ShuffleTrackNet(nn.Module):
             in_channels_list), anchorNum=anchorNum)
         self.emb_heads = make_emb_head(inp=out_channels, fpnNum=len(
             in_channels_list), anchorNum=anchorNum)
+
         # classifier
-        self.classifier = nn.Linear(256, ids)
+        self.classifier = nn.Linear(256, 547)
 
     def forward(self, inputs):
         out = self.body(inputs)
@@ -96,12 +111,12 @@ class ShuffleTrackNet(nn.Module):
                 cls_task_feature = self.cls_task(per_anchor_feature)
                 loc_task_feature = self.loc_task(per_anchor_feature)
                 emb_task_feature = self.emb_task(per_anchor_feature)
-                # cls feature, object and background
+                # cls feature,only one class but with background total class is two
                 cls_head = self.cls_heads[i *
                                           len(per_fpn_features) + j](cls_task_feature)
                 cls_head = cls_head.permute(0, 2, 3, 1).contiguous().view(
                     cls_head.shape[0], -1, 2)
-                # loc (x,y,w,h)
+                # loc frature,(x,y,w,h)
                 loc_head = self.loc_heads[i *
                                           len(per_fpn_features) + j](loc_task_feature)
                 loc_head = loc_head.permute(0, 2, 3, 1).contiguous().view(
@@ -127,9 +142,10 @@ class ShuffleTrackNet(nn.Module):
 
 
 if __name__ == '__main__':
-    cfg = cfg_re50
+    # cfg = cfg_shufflev2
+    cfg = cfg_shuffle_ex
     model = ShuffleTrackNet(cfg=cfg)
-    inpunt = torch.randn(1, 3, 640, 640)
+    inpunt = torch.randn(5, 3, 640, 640)
     cls_heads, loc_heads, emb_heads = model(inpunt)
     print(cls_heads.shape, loc_heads.shape, emb_heads.shape)
 
@@ -138,3 +154,4 @@ if __name__ == '__main__':
                                             print_per_layer_stat=True, verbose=True)
     print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
     print('{:<30}  {:<8}'.format('Number of parameters: ', params))
+
