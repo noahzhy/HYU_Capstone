@@ -93,7 +93,7 @@ class MultiBoxLoss(nn.Module):
         loss_l = F.smooth_l1_loss(loc_p, loc_t, reduction='sum')
 
         pos_idx = pos.unsqueeze(pos.dim()).expand_as(classifier_data)
-        aa_p = classifier_data[pos_idx].view(-1, 50)
+        aa_p = classifier_data[pos_idx].view(-1, 547) # ids
         classifier_t = classifier_t[pos].long()
         id_loss = self.idLoss(aa_p,classifier_t)
         # Compute max conf across batch for hard negative mining

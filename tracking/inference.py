@@ -14,15 +14,15 @@ import torch.nn.functional as F
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--trained_model', default='../epoch_12_loss_0.0922960415482521.pth',
+parser.add_argument('--trained_model', default='../epoch_33_loss_0.09456269443035126.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--confidence_threshold', default=0.6,
                     type=float, help='confidence_threshold')
-parser.add_argument('--nms_threshold', default=0.2,
+parser.add_argument('--nms_threshold', default=0.4,
                     type=float, help='nms_threshold')
-parser.add_argument('--vis_thres', default=0.6, type=float,
+parser.add_argument('--vis_thres', default=0.985, type=float,
                     help='visualization_threshold')
-parser.add_argument('--image', default='images/000007.jpg',
+parser.add_argument('--image', default='images/000008.jpg',
                     help='test image path')
 args = parser.parse_args()
 
@@ -58,7 +58,7 @@ if __name__ == '__main__':
         boxes = boxes * scale
         conf = F.softmax(conf, dim=-1)
         scores = conf.squeeze(0).cpu().numpy()[:, 1]
-        inds = np.where(scores > 0.6)[0]
+        inds = np.where(scores > args.confidence_threshold)[0]
         boxes = boxes[inds]
         scores = scores[inds]
         print(boxes, inds)
@@ -72,12 +72,13 @@ if __name__ == '__main__':
         dets = dets[i]
 
     for b in dets:
+        # print("c:", b[4])
         if b[4] < args.vis_thres:
             continue
         text = "id: {:d}".format(int(b[5]))
         # print(text)
         b = list(map(int, b))
-        # print(b)
+        print(b)
         cv2.rectangle(img_raw, (b[0], b[1]), (b[2], b[3]), (0, 255, 0), 2)
         cx = b[0]
         cy = b[1]

@@ -24,16 +24,21 @@ class Gtdataset(Dataset):
                 if data[6]:
                     data[2] = data[2]/1920
                     data[3] = data[3]/1080
-                    data[4] = data[4]/1920
-                    data[5] = data[5]/1080
+                    data[4] = (data[2]+data[4])/1920
+                    data[5] = (data[3]+data[5])/1080
                     tmp = data[1]
                     data[1] = data[7]
-                    data[7] = tmp%50
-                    maps[frame].append(data[0:6]+data[7:8])
+                    data[7] = tmp
+                    maps[frame].append([
+                        data[0],# frame
+                        data[7],# cls
+                        data[2],data[3],data[4],data[5],
+                        data[1],# ids
+                    ])
+                    # maps[frame].append(data[0:6]+data[7:8])
                     # print(data[0:6]+data[7:8])
             for img in os.listdir(os.path.join(vedio_path, 'img1')):
                 if int(img.split('.')[0]) in maps:
-                    # for t in maps[int(img.split('.')[0])]:
                     self.images.append(os.path.join(vedio_path, 'img1', img))
                     data = np.array(maps[int(img.split('.')[0])])
                     b = np.zeros((1, 7))

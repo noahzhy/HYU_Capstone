@@ -30,7 +30,7 @@ vis_thres = 0.6
 def train(model, train_loader):
     optimizer = optim.SGD(model.parameters(), lr=0.001,
                           momentum=0.9, weight_decay=5e-4)
-    criterion = MultiBoxLoss(2, 0.35, True, 0, True, 50, 0.35, False)
+    criterion = MultiBoxLoss(2, 0.35, True, 0, True, 547, 0.35, False)
     for epoch in range(1, CFG['epoch']+1):
         tqdm_train = tqdm(train_loader)
         for img, target in tqdm_train:
