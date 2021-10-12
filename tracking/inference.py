@@ -14,21 +14,22 @@ import torch.nn.functional as F
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--trained_model', default='../epoch_33_loss_0.09456269443035126.pth',
+parser.add_argument('--trained_model', default='../epoch_7_loss_1.2427860498428345.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--confidence_threshold', default=0.6,
                     type=float, help='confidence_threshold')
 parser.add_argument('--nms_threshold', default=0.4,
                     type=float, help='nms_threshold')
-parser.add_argument('--vis_thres', default=0.985, type=float,
+parser.add_argument('--vis_thres', default=0.8, type=float,
                     help='visualization_threshold')
-parser.add_argument('--image', default='images/000008.jpg',
+parser.add_argument('--image', default='images/000001.jpg',
                     help='test image path')
 args = parser.parse_args()
 
 
 if __name__ == '__main__':
     cfg = cfg_shufflev2
+    # cfg = cfg_re50
     model = ShuffleTrackNet(cfg=cfg).cuda()
     check = torch.load(args.trained_model)
     model.load_state_dict(check["net"])

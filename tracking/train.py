@@ -23,13 +23,13 @@ from utils.prior_box import PriorBox
 
 
 CFG = cfg_shufflev2
+# CFG = cfg_re50
 nms_threshold = 0.4
 vis_thres = 0.6
 
 
 def train(model, train_loader):
-    optimizer = optim.SGD(model.parameters(), lr=0.001,
-                          momentum=0.9, weight_decay=5e-4)
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9, weight_decay=5e-4)
     criterion = MultiBoxLoss(2, 0.35, True, 0, True, 547, 0.35, False)
     for epoch in range(1, CFG['epoch']+1):
         tqdm_train = tqdm(train_loader)
@@ -53,12 +53,11 @@ def train(model, train_loader):
 
 
 if __name__ == '__main__':
-    test = Gtdataset()
-    trainloader = DataLoader(test, batch_size=32, shuffle=True)
+    gtdataset = Gtdataset()
+    trainloader = DataLoader(gtdataset, batch_size=16, shuffle=True)
     model = ShuffleTrackNet(cfg=CFG).cuda()
     # print(model)
     # model = torch.nn.DataParallel(model)
-    # check = torch.load("test.pth")
+    # check = torch.load("epoch_16_loss_0.09874087572097778.pth")
     # model.load_state_dict(check["net"])
     train(model, trainloader)
-    # predict(model, 'source/000001.jpg', 'source/result_img.png')

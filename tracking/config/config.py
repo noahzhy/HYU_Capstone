@@ -15,6 +15,7 @@ cfg_re50 = {
     'decay2': 90,
     'image_size': [640,640],
     'pretrain': False,
+    'ids': 547,
     'return_layers': {'layer2': 1, 'layer3': 2, 'layer4': 3},
     'in_channel': 256,
     'out_channel': 256
@@ -36,6 +37,7 @@ cfg_shuffle = {
     'decay2': 90,
     'image_size': [640,640],
     'pretrain': False,
+    'ids': 547,
     'return_layers': {'layer2': 1, 'layer3': 2, 'layer4': 3},
     'ShuffleNetG2_return_layers':{'layer1': 1, 'layer2': 2, 'layer3': 3},
     'in_channel': 100,
@@ -61,7 +63,7 @@ cfg_shufflev2 = {
     'epoch': 100,
     'image_size': [640,640],
     'pretrain': False,
-    'ids': 547, #7
+    'ids': 547,
     'ShuffleNetV2_return_layers':{'layer1': 1, 'layer2': 2, 'layer3': 3},
     'in_channel': 58,
     'out_channel': 256,

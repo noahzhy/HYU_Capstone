@@ -26,9 +26,7 @@ class Gtdataset(Dataset):
                     data[3] = data[3]/1080
                     data[4] = (data[2]+data[4])/1920
                     data[5] = (data[3]+data[5])/1080
-                    tmp = data[1]
-                    data[1] = data[7]
-                    data[7] = tmp
+
                     maps[frame].append([
                         data[0],# frame
                         data[7],# cls
