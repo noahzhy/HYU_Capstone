@@ -7,25 +7,22 @@ from models.model.blocks import *
 
 
 class ShuffleNetV2_EX(nn.Module):
-    def __init__(self, input_size=640, n_class=12, model_size='Medium'):
+    def __init__(self, input_size=640, n_class=12, scale=1.5):
         super(ShuffleNetV2_EX, self).__init__()
 
-        print('model size is ', model_size)
+        print('scale is ', model_size)
 
         assert input_size % 32 == 0
-        architecture = [0, 0, 3, 1, 1, 1, 0, 0, 2, 0, 2, 1, 1, 0, 2, 0, 2, 1, 3, 2]
+        architecture = [
+            0, 0, 3, 1,
+            1, 1, 0, 0,
+            2, 0, 2, 1, 1, 0, 2, 0,
+            2, 1, 3, 2
+        ]
 
         self.stage_repeats = [4, 4, 8, 4]
-        if model_size == 'Large':
-            self.stage_out_channels = [-1, 16, 68, 168, 336, 672, 1280]
-        elif model_size == 'Medium':
-            self.stage_out_channels = [-1, 16, 48, 128, 256, 512, 1280]
-        elif model_size == 'Small':
-            self.stage_out_channels = [-1, 16, 36, 104, 208, 416, 1280]
-        else:
-            raise NotImplementedError
+        self.stage_out_channels = [-1, 16, 48, 128, 256, 512, 1280]
 
-        # building first layer
         input_channel = self.stage_out_channels[1]
         self.first_conv = nn.Sequential(
             nn.Conv2d(3, input_channel, 3, 2, 1, bias=False),
@@ -70,12 +67,11 @@ class ShuffleNetV2_EX(nn.Module):
                     raise NotImplementedError
                 input_channel = output_channel
             self.layers.append(self.features)
-        # assert archIndex == len(architecture)
-        # self.features = nn.Sequential(*self.features)
+
         self.layer0 = nn.Sequential(*self.layers[0])
-        self.layer1 = nn.Sequential(*self.layers[1])
-        self.layer2 = nn.Sequential(*self.layers[2])
-        self.layer3 = nn.Sequential(*self.layers[3])
+        self.layer1 = nn.Sequential(*self.layers[1]) # stage2
+        self.layer2 = nn.Sequential(*self.layers[2]) # stage3
+        self.layer3 = nn.Sequential(*self.layers[3]) # stage4
 
         self.conv_last = nn.Sequential(
             nn.Conv2d(input_channel, 1280, 1, 1, 0, bias=False),
@@ -143,13 +139,12 @@ if __name__ == "__main__":
     model = ShuffleNetV2_EX()
     # print(model)
 
-    test_data = torch.rand(2, 3, 640, 640)
-    test_outputs = model(test_data)
-
-    print(test_outputs.shape)
+    x = torch.rand(2, 3, 640, 640)
+    y = model(x)
+    print(y.shape)
     body = _utils.IntermediateLayerGetter(model, {'layer1':1,'layer2':2,'layer3':3})
 
-    out=(body(test_data))
+    out=(body(x))
     for i in out:
         print(out[i].shape)
 
