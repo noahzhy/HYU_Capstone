@@ -44,7 +44,7 @@ class ShuffleTrackNet(nn.Module):
             backbone = ShuffleNetV2(cfg['ShuffleNetV2'])
             self.body = _utils.IntermediateLayerGetter(
                 backbone, cfg['ShuffleNetV2_return_layers'])
-            ch_list = [24, 58, 88, 122]
+            ch_list = [24, 132, 264, 528]
             cfg['in_channel'] = ch_list[int(
                 cfg['ShuffleNetV2']['width_mult']*2-1)]
             pass
@@ -64,7 +64,7 @@ class ShuffleTrackNet(nn.Module):
             in_channels_stage2 * 8,
         ]
         # print(in_channels_list)
-        in_channels_list = [128, 256, 512]
+        in_channels_list = [132, 264, 528]
         out_channels = cfg['out_channel']
         self.fpn = FPN(in_channels_list, out_channels)
         self.ssh1 = SSH(out_channels, out_channels)
@@ -142,8 +142,8 @@ class ShuffleTrackNet(nn.Module):
 
 
 if __name__ == '__main__':
-    # cfg = cfg_shufflev2
-    cfg = cfg_shuffle_ex
+    cfg = cfg_shufflev2
+    # cfg = cfg_shuffle_ex
     model = ShuffleTrackNet(cfg=cfg)
     inpunt = torch.randn(5, 3, 640, 640)
     cls_heads, loc_heads, emb_heads = model(inpunt)

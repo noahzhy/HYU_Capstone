@@ -18,15 +18,15 @@ from utils.prior_box import PriorBox
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--trained_model', default='../epoch_51_loss_0.0401029959321022.pth',
+parser.add_argument('--trained_model', default='../epoch_24_loss_0.2687300443649292.pth',
                     type=str, help='Trained state_dict file path to open')
-parser.add_argument('--confidence_threshold', default=0.4,
+parser.add_argument('--confidence_threshold', default=0.8,
                     type=float, help='confidence_threshold')
-parser.add_argument('--nms_threshold', default=0.4,
+parser.add_argument('--nms_threshold', default=0.35,
                     type=float, help='nms_threshold')
-parser.add_argument('--vis_thres', default=0.9999, type=float,
+parser.add_argument('--vis_thres', default=0.5, type=float,
                     help='visualization_threshold')
-parser.add_argument('--image', default='images/000017.jpg',
+parser.add_argument('--image', default='images/000004.jpg',
                     help='test image path')
 args = parser.parse_args()
 
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     cfg = cfg_shuffle_ex
     model = ShuffleTrackNet(cfg=cfg).cuda()
     check = torch.load(args.trained_model)
-    model.load_state_dict(check["net"])
+    model.load_state_dict(check["net"], False)
     model.eval()
     img_raw = cv2.imread(args.image)
     img = cv2.resize(img_raw,(640,640))

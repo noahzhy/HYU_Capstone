@@ -22,7 +22,7 @@ from utils.multibox_loss import MultiBoxLoss
 from utils.prior_box import PriorBox
 
 
-CFG = cfg_shuffle_ex
+CFG = cfg_shufflev2
 # nms_threshold = 0.4
 # vis_thres = 0.6
 
@@ -101,10 +101,10 @@ def train(model, train_loader):
 
 if __name__ == '__main__':
     gtds = Gtdataset()
-    trainloader = DataLoader(gtds, batch_size=24, shuffle=True)
+    trainloader = DataLoader(gtds, batch_size=32, shuffle=True)
     model = ShuffleTrackNet(cfg=CFG).cuda()
     # print(model)
-    model = torch.nn.DataParallel(model)
+    # model = torch.nn.DataParallel(model)
     # check = torch.load("epoch_16_loss_0.09874087572097778.pth")
     # model.load_state_dict(check["net"])
     train(model, trainloader)

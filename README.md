@@ -2,11 +2,39 @@
 
 Our goal is to achieve the real-time (high fps) and better IDF1 score on MOT task, and try to deploy on the mobile devices.
 
-In the actual project, it is often required to deploy on the devices which the CPU-only environment. Therefore, we decided to design the lightweight real-time single stage multi-object tracking architecture.
+In the actual project, it is required to deploy on the devices which the CPU-only environment. Therefore, I decided to design the lightweight real-time single stage multi-object tracking architecture.
 
-The first lightweight architecture that come to mind is shufflenet. It's every common lightweight architecture for mobile devices. Thus, we choose the shufflenet v2 scale 1.5x as backbone.
+The first lightweight architecture that come to mind is shufflenet. It's every common lightweight architecture for mobile devices. Thus, I choose the shufflenet v2 scale 1.5x as backbone because that it could achieve the high accuracy with less operations.
 
 
+
+The original basic unit in shufflenet is as following, 
+
+
+
+
+
+
+
+
+
+There are three mainly stages in original shufflenet architecture. In stage one, I modified it with the large receptive field. 
+
+| Stages | original | modified |
+| ------ | -------- | -------- |
+| stage2 |          |          |
+| stage3 |          |          |
+| stage4 |          |          |
+
+The most 
+
+
+
+Firstly, I have modified its structure. 
+
+
+
+Add the SE model at last and also 
 
 
 
@@ -21,9 +49,9 @@ The first lightweight architecture that come to mind is shufflenet. It's every c
 
 
 
-We used the shufflenet v2 1.5x as backbone to extract feature, connect with the feature map of stage2, stage3, stage4 from backbone as FPN. 
+I used the shufflenet v2 1.5x as backbone to extract feature, connect with the feature map of stage2, stage3, stage4 from backbone as FPN. 
 
-The loss function we referred to SSD loss function which CE loss (Cross Entropy Loss) for the classification and embedding loss, smooth L1 loss for box regression.
+The loss function I referred to SSD loss function which CE loss (Cross Entropy Loss) for the classification and embedding loss, smooth L1 loss for box regression.
 
 
 
