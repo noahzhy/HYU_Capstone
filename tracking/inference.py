@@ -11,27 +11,27 @@ import torch.backends.cudnn as cudnn
 import torch.nn.functional as F
 import torchvision
 
-from config.config import cfg_re50, cfg_shuffle, cfg_shuffle_ex
+from config.config import cfg_re50, cfg_shuffle, cfg_shufflev2
 from models.model.shuffletrack import ShuffleTrackNet
 from utils.box_utils import decode
 from utils.prior_box import PriorBox
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--trained_model', default='../epoch_24_loss_0.2687300443649292.pth',
+parser.add_argument('--trained_model', default='epoch_6_loss_3.733808755874634.pth',
                     type=str, help='Trained state_dict file path to open')
-parser.add_argument('--confidence_threshold', default=0.8,
+parser.add_argument('--confidence_threshold', default=0.4,
                     type=float, help='confidence_threshold')
 parser.add_argument('--nms_threshold', default=0.35,
                     type=float, help='nms_threshold')
-parser.add_argument('--vis_thres', default=0.5, type=float,
+parser.add_argument('--vis_thres', default=0.4, type=float,
                     help='visualization_threshold')
-parser.add_argument('--image', default='images/000004.jpg',
+parser.add_argument('--image', default='images/000017.jpg',
                     help='test image path')
 args = parser.parse_args()
 
 if __name__ == '__main__':
-    cfg = cfg_shuffle_ex
+    cfg = cfg_shufflev2
     model = ShuffleTrackNet(cfg=cfg).cuda()
     check = torch.load(args.trained_model)
     model.load_state_dict(check["net"], False)
