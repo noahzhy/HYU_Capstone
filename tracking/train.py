@@ -107,7 +107,7 @@ if __name__ == '__main__':
     trainloader = DataLoader(gtds, batch_size=24, shuffle=True)
     model = ShuffleTrackNet(cfg=CFG).cuda()
     # print(model)
-    # model = torch.nn.DataParallel(model)
+    model = torch.nn.DataParallel(model)
     # check = torch.load("epoch_16_loss_0.09874087572097778.pth")
     # model.load_state_dict(check["net"])
     train(model, trainloader)
