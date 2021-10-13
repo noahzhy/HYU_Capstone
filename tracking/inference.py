@@ -16,16 +16,17 @@ from models.model.shuffletrack import ShuffleTrackNet
 from utils.box_utils import decode
 from utils.prior_box import PriorBox
 
+
 parser = argparse.ArgumentParser()
-parser.add_argument('--trained_model', default='epoch_1_loss_4.297705173492432.pth',
+parser.add_argument('--trained_model', default='../epoch_51_loss_0.0401029959321022.pth',
                     type=str, help='Trained state_dict file path to open')
-parser.add_argument('--confidence_threshold', default=0.8,
+parser.add_argument('--confidence_threshold', default=0.4,
                     type=float, help='confidence_threshold')
 parser.add_argument('--nms_threshold', default=0.4,
                     type=float, help='nms_threshold')
-parser.add_argument('--vis_thres', default=0.99, type=float,
+parser.add_argument('--vis_thres', default=0.9999, type=float,
                     help='visualization_threshold')
-parser.add_argument('--image', default='images/000002.jpg',
+parser.add_argument('--image', default='images/000017.jpg',
                     help='test image path')
 args = parser.parse_args()
 

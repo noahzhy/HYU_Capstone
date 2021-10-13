@@ -7,17 +7,15 @@ from models.model.blocks import *
 
 
 class ShuffleNetV2_EX(nn.Module):
-    def __init__(self, input_size=640, n_class=12, scale=1.5):
+    def __init__(self, input_size=640, n_class=12):
         super(ShuffleNetV2_EX, self).__init__()
 
-        print('scale is ', model_size)
-
         assert input_size % 32 == 0
-        architecture = [
-            0, 0, 3, 1,
-            1, 1, 0, 0,
-            2, 0, 2, 1, 1, 0, 2, 0,
-            2, 1, 3, 2
+        architecture_txt = [
+            'Shuffle3x3', 'Shuffle3x3', 'Xception', 'Shuffle5x5',
+            'Shuffle5x5', 'Shuffle5x5', 'Shuffle3x3', 'Shuffle3x3',
+            'Shuffle7x7', 'Shuffle3x3', 'Shuffle7x7', 'Shuffle5x5', 'Shuffle5x5', 'Shuffle3x3', 'Shuffle7x7', 'Shuffle3x3',
+            'Shuffle7x7', 'Shuffle5x5', 'Xception', 'Shuffle7x7'
         ]
 
         self.stage_repeats = [4, 4, 8, 4]
@@ -45,22 +43,18 @@ class ShuffleNetV2_EX(nn.Module):
                 else:
                     inp, outp, stride = input_channel // 2, output_channel, 1
 
-                blockIndex = architecture[archIndex]
+                blockIndex = architecture_txt[archIndex]
                 archIndex += 1
-                if blockIndex == 0:
-                    # print('Shuffle3x3')
+                if blockIndex == 'Shuffle3x3':
                     self.features.append(Shufflenet(inp, outp, base_mid_channels=outp // 2, ksize=3, stride=stride,
                                     activation=activation, useSE=useSE))
-                elif blockIndex == 1:
-                    # print('Shuffle5x5')
+                elif blockIndex == 'Shuffle5x5':
                     self.features.append(Shufflenet(inp, outp, base_mid_channels=outp // 2, ksize=5, stride=stride,
                                     activation=activation, useSE=useSE))
-                elif blockIndex == 2:
-                    # print('Shuffle7x7')
+                elif blockIndex == 'Shuffle7x7':
                     self.features.append(Shufflenet(inp, outp, base_mid_channels=outp // 2, ksize=7, stride=stride,
                                     activation=activation, useSE=useSE))
-                elif blockIndex == 3:
-                    # print('Xception')
+                elif blockIndex == 'Xception':
                     self.features.append(Xception(inp, outp, base_mid_channels=outp // 2, stride=stride,
                                     activation=activation, useSE=useSE))
                 else:
@@ -79,7 +73,7 @@ class ShuffleNetV2_EX(nn.Module):
             HS()
         )
         self.globalpool = nn.AvgPool2d(7)
-        self.LastSE = SELayer(1280)
+        self.SE = SELayer(1280)
         self.fc = nn.Sequential(
             nn.Linear(1280, 1280, bias=False),
             HS(),
@@ -100,7 +94,7 @@ class ShuffleNetV2_EX(nn.Module):
         x = self.conv_last(x)
 
         x = self.globalpool(x)
-        x = self.LastSE(x)
+        x = self.SE(x)
 
         x = x.contiguous().view(-1, 1280)
 
@@ -142,9 +136,10 @@ if __name__ == "__main__":
     x = torch.rand(2, 3, 640, 640)
     y = model(x)
     print(y.shape)
-    body = _utils.IntermediateLayerGetter(model, {'layer1':1,'layer2':2,'layer3':3})
+    body = _utils.IntermediateLayerGetter(
+        model, {'layer1': 1, 'layer2': 2, 'layer3': 3})
 
-    out=(body(x))
+    out = (body(x))
     for i in out:
         print(out[i].shape)
 
