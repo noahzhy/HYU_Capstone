@@ -12,10 +12,11 @@ class ShuffleNetV2_EX(nn.Module):
 
         assert input_size % 32 == 0
         architecture_txt = [
-            'Shuffle3x3', 'Shuffle3x3', 'Xception', 'Shuffle5x5',
-            'Shuffle5x5', 'Shuffle5x5', 'Shuffle3x3', 'Shuffle3x3',
-            'Shuffle7x7', 'Shuffle3x3', 'Shuffle7x7', 'Shuffle5x5', 'Shuffle5x5', 'Shuffle3x3', 'Shuffle7x7', 'Shuffle3x3',
-            'Shuffle7x7', 'Shuffle5x5', 'Xception', 'Shuffle7x7'
+            'Shuffle3', 'Shuffle3', 'Xception', 'Shuffle5',
+
+            'Shuffle5', 'Shuffle5', 'Shuffle3', 'Shuffle3', # stage2
+            'Shuffle7', 'Shuffle3', 'Shuffle7', 'Shuffle5', 'Shuffle5', 'Shuffle3', 'Shuffle7', 'Shuffle3', # stage3
+            'Shuffle7', 'Shuffle5', 'Xception', 'Shuffle7' # stage4
         ]
 
         self.stage_repeats = [4, 4, 8, 4]
@@ -45,13 +46,13 @@ class ShuffleNetV2_EX(nn.Module):
 
                 blockIndex = architecture_txt[archIndex]
                 archIndex += 1
-                if blockIndex == 'Shuffle3x3':
+                if blockIndex == 'Shuffle3':
                     self.features.append(Shufflenet(inp, outp, base_mid_channels=outp // 2, ksize=3, stride=stride,
                                     activation=activation, useSE=useSE))
-                elif blockIndex == 'Shuffle5x5':
+                elif blockIndex == 'Shuffle5':
                     self.features.append(Shufflenet(inp, outp, base_mid_channels=outp // 2, ksize=5, stride=stride,
                                     activation=activation, useSE=useSE))
-                elif blockIndex == 'Shuffle7x7':
+                elif blockIndex == 'Shuffle7':
                     self.features.append(Shufflenet(inp, outp, base_mid_channels=outp // 2, ksize=7, stride=stride,
                                     activation=activation, useSE=useSE))
                 elif blockIndex == 'Xception':
