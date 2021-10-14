@@ -191,11 +191,11 @@ class ShuffleNetV2(nn.Module):
             num_layers[0], channels[0], channels[1], **kwargs)
         self.layer2 = self._make_layer(
             num_layers[1], channels[1], channels[2], **kwargs)
-        self.layer = self._make_layer(
+        self.layer3 = self._make_layer(
             num_layers[2], channels[2], channels[3], **kwargs)
-        if len(self.channels) == 5:
-            self.conv5 = conv_bn(
-                channels[3], channels[4], kernel_size=1, stride=1 ,pad=0 )
+        # if len(self.channels) == 5:
+        #     self.conv5 = conv_bn(
+        #         channels[3], channels[4], kernel_size=1, stride=1 ,pad=0 )
 
         # building last several layers
         # self.conv_last = conv_1x1_bn(input_channel, self.channels[-1])
@@ -217,11 +217,12 @@ class ShuffleNetV2(nn.Module):
     def forward(self, x):
         x = self.conv1(x)
         x = self.maxpool(x)
+
         c3 = self.layer1(x)
         c4 = self.layer2(c3)
         c5 = self.layer3(c4)
-        if len(self.channels) == 5:
-            c5 = self.conv5(c5)
+        # if len(self.channels) == 5:
+        #     c5 = self.conv5(c5)
         # x = self.conv_last(x)
         x = self.globalpool(c5)
         x = x.view(-1, self.channels[-1])
@@ -239,7 +240,7 @@ if __name__ == "__main__":
     """
     cfg_shufflev2 = {
         'name': 'ShuffleNetV2',
-        'min_sizes': [[16, 32], [64, 128], [256, 512]],
+        'min_sizes': [[8, 16], [32, 64], [128, 256]],
         'anchorNum_per_stage': 2,
         'steps': [8, 16, 32],
         'variance': [0.1, 0.2],
@@ -252,7 +253,7 @@ if __name__ == "__main__":
         'pretrain': False,
         'ShuffleNetV2_return_layers': {'layer1': 1, 'layer2': 2, 'layer3': 3},
         'in_channel': 100,
-        'out_channel': 256,
+        'out_channel': 128,
         'ShuffleNetV2': {
             'out_planes': [200, 400, 800],
             'stage_repeats': [4, 8, 4],
