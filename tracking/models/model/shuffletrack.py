@@ -141,6 +141,7 @@ if __name__ == '__main__':
     inpunt = torch.randn(5, 3, 640, 640)
     cls_heads, loc_heads, emb_heads = model(inpunt)
     print(cls_heads.shape, loc_heads.shape, emb_heads.shape)
+    print(model)
 
     from ptflops import get_model_complexity_info
     macs, params = get_model_complexity_info(model, (3, 640, 640), as_strings=True,

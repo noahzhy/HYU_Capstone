@@ -191,7 +191,7 @@ class ShuffleNetV2(nn.Module):
             num_layers[0], channels[0], channels[1], **kwargs)
         self.layer2 = self._make_layer(
             num_layers[1], channels[1], channels[2], **kwargs)
-        self.layer3 = self._make_layer(
+        self.layer = self._make_layer(
             num_layers[2], channels[2], channels[3], **kwargs)
         if len(self.channels) == 5:
             self.conv5 = conv_bn(

@@ -26,7 +26,7 @@ parser.add_argument('--nms_threshold', default=0.3,
                     type=float, help='nms_threshold')
 parser.add_argument('--vis_thres', default=0.2, type=float,
                     help='visualization_threshold')
-parser.add_argument('--image', default='images/000024.jpg',
+parser.add_argument('--image', default='images/000026.jpg',
                     help='test image path')
 parser.add_argument('--save_path',
                     default='images/result_img_01.jpg',
@@ -49,11 +49,11 @@ if __name__ == '__main__':
     img = img.cuda().float() / 255.0
     scale = torch.Tensor([img_raw.shape[1], img_raw.shape[0], img_raw.shape[1], img_raw.shape[0]]).cuda()
     
-    for i in range(10):
-        tic = time.time()
-        loc, conf, classifier = model(img)  # forward pass
-        toc = time.time()
-        print((toc-tic)*1000)
+    # for i in range(10):
+    tic = time.time()
+    loc, conf, classifier = model(img)  # forward pass
+    toc = time.time()
+        # print((toc-tic)*1000)
 
     priorbox = PriorBox(cfg)
     with torch.no_grad():

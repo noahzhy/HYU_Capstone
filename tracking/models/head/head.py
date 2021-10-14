@@ -42,7 +42,7 @@ def make_loc_head(inp, oup = 4, fpnNum = 3, anchorNum = 2):
             bbox_heads.append(nn.Conv2d(inp, oup, kernel_size=(1, 1), stride=1, padding=0))
     return bbox_heads
 
-def make_emb_head(inp, oup = 256, fpnNum = 3, anchorNum = 2):
+def make_emb_head(inp, oup = 128, fpnNum = 3, anchorNum = 2):
     emb_heads = nn.ModuleList()
     for i in range(fpnNum):
         for j in range(anchorNum):
