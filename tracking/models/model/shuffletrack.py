@@ -79,7 +79,7 @@ class ShuffleTrackNet(nn.Module):
             in_channels_list), anchorNum=anchorNum)
 
         # classifier
-        self.classifier = nn.Linear(256, 547)
+        self.classifier = nn.Linear(128, 547)
 
     def forward(self, inputs):
         out = self.body(inputs)
@@ -118,7 +118,7 @@ class ShuffleTrackNet(nn.Module):
                 emb_head = self.emb_heads[i *
                                           len(per_fpn_features) + j](emb_task_feature)
                 emb_head = emb_head.permute(0, 2, 3, 1).contiguous().view(
-                    emb_head.shape[0], -1, 256)
+                    emb_head.shape[0], -1, 128)
 
                 cls_heads.append(cls_head)
                 loc_heads.append(loc_head)
