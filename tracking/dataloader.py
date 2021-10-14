@@ -22,6 +22,10 @@ class Gtdataset(Dataset):
                 if frame not in maps:
                     maps[frame] = []
                 if data[6]:
+                    # data[2] = data[2]/1920+data[4]/1920/2
+                    # data[3] = data[3]/1080+data[5]/1080/2
+                    # data[4] = data[4]/1920
+                    # data[5] = data[5]/1080
                     data[2] = data[2]/1920+data[4]/1920/2
                     data[3] = data[3]/1080+data[5]/1080/2
                     data[4] = data[4]/1920

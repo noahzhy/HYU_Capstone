@@ -63,7 +63,7 @@ cfg_shufflev2 = {
     'pretrain': False,
     'ShuffleNetV2_return_layers': {'layer1': 1, 'layer2': 2, 'layer3': 3},
     'in_channel': 58,
-    'out_channel': 256,
+    'out_channel': 128,
     'ShuffleNetV2': {
         'out_planes': [200, 400, 800],
         'stage_repeats': [4, 8, 4],

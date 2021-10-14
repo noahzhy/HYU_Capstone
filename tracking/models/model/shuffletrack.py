@@ -13,7 +13,6 @@ from models.head.head import (make_cls_head, make_emb_head, make_loc_head,
                               task_specific_loc)
 from models.model.ShuffleNet import ShuffleNetG2
 from models.model.ShuffleNetV2 import ShuffleNetV2
-from models.model.ShuffleNet_EX import ShuffleNetV2_EX
 from models.neck.neck import FPN as FPN
 from models.neck.neck import SSH as SSH
 from models.neck.neck import task_shared
@@ -48,12 +47,6 @@ class ShuffleTrackNet(nn.Module):
             cfg['in_channel'] = ch_list[int(
                 cfg['ShuffleNetV2']['width_mult']*2-1)]
             pass
-        elif cfg['name'] == 'ShuffleNet_EX':
-            backbone = ShuffleNetV2_EX()
-            cfg['in_channel'] = [48, 128, 256, 512]
-            self.body = _utils.IntermediateLayerGetter(
-                backbone, cfg['ShuffleNet_EX_return_layers'])
-            
 
         # not total anchor,indicate per stage anchors
         anchorNum = cfg['anchorNum_per_stage']

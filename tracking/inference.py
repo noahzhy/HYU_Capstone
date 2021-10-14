@@ -18,17 +18,21 @@ from utils.prior_box import PriorBox
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--trained_model', default='epoch_6_loss_3.733808755874634.pth',
+parser.add_argument('--trained_model', default='epoch_8_loss_1.7194079160690308.pth',
                     type=str, help='Trained state_dict file path to open')
-parser.add_argument('--confidence_threshold', default=0.4,
+parser.add_argument('--confidence_threshold', default=0.1,
                     type=float, help='confidence_threshold')
-parser.add_argument('--nms_threshold', default=0.35,
+parser.add_argument('--nms_threshold', default=0.3,
                     type=float, help='nms_threshold')
-parser.add_argument('--vis_thres', default=0.4, type=float,
+parser.add_argument('--vis_thres', default=0.2, type=float,
                     help='visualization_threshold')
-parser.add_argument('--image', default='images/000017.jpg',
+parser.add_argument('--image', default='images/000024.jpg',
+                    help='test image path')
+parser.add_argument('--save_path',
+                    default='images/result_img_01.jpg',
                     help='test image path')
 args = parser.parse_args()
+
 
 if __name__ == '__main__':
     cfg = cfg_shufflev2
@@ -44,8 +48,13 @@ if __name__ == '__main__':
     img = torch.from_numpy(img).unsqueeze(0).cuda()
     img = img.cuda().float() / 255.0
     scale = torch.Tensor([img_raw.shape[1], img_raw.shape[0], img_raw.shape[1], img_raw.shape[0]]).cuda()
-    tic = time.time()
-    loc, conf, classifier = model(img)  # forward pass
+    
+    for i in range(10):
+        tic = time.time()
+        loc, conf, classifier = model(img)  # forward pass
+        toc = time.time()
+        print((toc-tic)*1000)
+
     priorbox = PriorBox(cfg)
     with torch.no_grad():
         priors = priorbox.forward()
@@ -69,11 +78,11 @@ if __name__ == '__main__':
             continue
         text = "id: {:d}".format(int(b[5]))
         # print(text)
+        print(list(map(float, b)))
         b = list(map(int, b))
-        print(b)
         cv2.rectangle(img_raw, (b[0], b[1]), (b[2], b[3]), (0, 255, 0), 2)
         cx = b[0]
         cy = b[1]
         cv2.putText(img_raw, text, (cx, cy),
-                    cv2.FONT_HERSHEY_DUPLEX, 0.5, (255, 255, 255))
-    cv2.imwrite('images/result_img.jpg', img_raw)
+                    cv2.FONT_HERSHEY_DUPLEX, 1.0, (255, 255, 255))
+    cv2.imwrite(args.save_path, img_raw)
