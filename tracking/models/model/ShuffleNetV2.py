@@ -94,75 +94,6 @@ class ShuffleV2Block(nn.Module):
         x = x[:, (x.shape[1] // 2):, :, :]
         return x_proj, x
 
-# class InvertedResidual(nn.Module):
-#     def __init__(self, inp, oup, stride, benchmodel):
-#         super(InvertedResidual, self).__init__()
-#         self.benchmodel = benchmodel
-#         self.stride = stride
-#         assert stride in [1, 2]
-
-#         oup_inc = oup//2
-#         pad = ksize // 2
-
-#         if self.benchmodel == 1:
-#             #assert inp == oup_inc
-#             self.banch2 = nn.Sequential(
-#                 # pw
-#                 nn.Conv2d(oup_inc, oup_inc, 1, 1, 0, bias=False),
-#                 nn.BatchNorm2d(oup_inc),
-#                 nn.ReLU(inplace=True),
-#                 # dw
-#                 nn.Conv2d(oup_inc, oup_inc, 5, stride,
-#                           1, groups=oup_inc, bias=False),
-#                 nn.BatchNorm2d(oup_inc),
-#                 # pw-linear
-#                 nn.Conv2d(oup_inc, oup_inc, 1, 1, 0, bias=False),
-#                 nn.BatchNorm2d(oup_inc),
-#                 nn.ReLU(inplace=True),
-#             )
-#         else:
-#             self.banch1 = nn.Sequential(
-#                 # dw
-#                 nn.Conv2d(inp, inp, 5, stride, 1, groups=inp, bias=False),
-#                 nn.BatchNorm2d(inp),
-#                 # pw-linear
-#                 nn.Conv2d(inp, oup_inc, 1, 1, 0, bias=False),
-#                 nn.BatchNorm2d(oup_inc),
-#                 nn.ReLU(inplace=True),
-#             )
-
-#             self.banch2 = nn.Sequential(
-#                 # pw
-#                 nn.Conv2d(inp, oup_inc, 1, 1, 0, bias=False),
-#                 nn.BatchNorm2d(oup_inc),
-#                 nn.ReLU(inplace=True),
-#                 # dw
-#                 nn.Conv2d(oup_inc, oup_inc, 5, stride,
-#                           1, groups=oup_inc, bias=False),
-#                 nn.BatchNorm2d(oup_inc),
-#                 # pw-linear
-#                 nn.Conv2d(oup_inc, oup_inc, 1, 1, 0, bias=False),
-#                 nn.BatchNorm2d(oup_inc),
-#                 nn.ReLU(inplace=True),
-#             )
-
-#     @staticmethod
-#     def _concat(x, out):
-#         # concatenate along channel axis
-#         return torch.cat((x, out), 1)
-
-#     def forward(self, x):
-#         if 1 == self.benchmodel:
-#             x1 = x[:, :(x.shape[1]//2), :, :]
-#             x2 = x[:, (x.shape[1]//2):, :, :]
-#             print(x1.shape, self.banch2(x2).shape)
-#             out = self._concat(x1, self.banch2(x2))
-#         elif 2 == self.benchmodel:
-#             print(self.banch1(x).shape, self.banch2(x).shape)
-#             out = self._concat(self.banch1(x), self.banch2(x))
-
-#         return channel_shuffle(out, 2)
-
 
 class ShuffleNetV2(nn.Module):
     def __init__(self, cfg, **kwargs):
@@ -175,7 +106,7 @@ class ShuffleNetV2(nn.Module):
 
         num_layers = [4, 8, 4]
         self.num_layers = num_layers
-        channels = [24, 132, 264, 528, 1000]
+        channels = [24, 132, 264, 528, 1056]
         self.channels = channels
 
         # building first layer
@@ -240,7 +171,7 @@ if __name__ == "__main__":
     """
     cfg_shufflev2 = {
         'name': 'ShuffleNetV2',
-        'min_sizes': [[8, 16], [32, 64], [128, 256]],
+        'min_sizes': [[16, 32], [64, 128], [256, 512]],
         'anchorNum_per_stage': 2,
         'steps': [8, 16, 32],
         'variance': [0.1, 0.2],

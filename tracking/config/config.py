@@ -73,30 +73,3 @@ cfg_shufflev2 = {
         'n_class': 12
     }
 }
-
-cfg_shuffle_ex = {
-    'name': 'ShuffleNet_EX',
-    'min_sizes': [[16, 32], [64, 128], [256, 512]],
-    'anchorNum_per_stage': 2,
-    'steps': [8, 16, 32],
-    'variance': [0.1, 0.2],
-    'clip': False,
-    'loc_weight': 2.0,
-    'gpu_train': False,
-    'batch_size': 8,
-    'ngpu': 4,
-    'epoch': 100,
-    'image_size': [640, 640],
-    'pretrain': False,
-    'ShuffleNet_EX_return_layers': {'layer1': 1, 'layer2': 2, 'layer3': 3},
-    'in_channel': 58,
-    'out_channel': 256,
-    'ShuffleNet_EX': {
-        'out_planes': [200, 400, 800],
-        'stage_repeats': [4, 8, 4],
-        'groups': 2,
-        'image_size': [640, 640],
-        'width_mult': 1.5,  # 缩放系数
-        'n_class': 12
-    }
-}

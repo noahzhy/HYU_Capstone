@@ -15,7 +15,7 @@ from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from config.config import cfg_re50, cfg_shuffle, cfg_shuffle_ex, cfg_shufflev2
+from config.config import cfg_re50, cfg_shuffle, cfg_shufflev2
 from dataloader import Detdataset, Gtdataset, Shuffledataset
 from models.model.shuffletrack import ShuffleTrackNet
 from utils.box_utils import decode
@@ -29,7 +29,7 @@ CFG = cfg_shufflev2
 
 def train(model, train_loader):
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9, weight_decay=5e-4)
-    criterion = MultiBoxLoss(2, 0.35, True, 0, True, 20, 0.35, False)
+    criterion = MultiBoxLoss(2, 0.35, True, 0, True, 5, 0.35, False)
     for epoch in range(1, CFG['epoch']+1):
         tqdm_train = tqdm(train_loader)
         for img, target in tqdm_train:
@@ -53,7 +53,7 @@ def train(model, train_loader):
 
 if __name__ == '__main__':
     gtds = Gtdataset()
-    trainloader = DataLoader(gtds, batch_size=32, shuffle=True)
+    trainloader = DataLoader(gtds, batch_size=40, shuffle=True)
     model = ShuffleTrackNet(cfg=CFG).cuda()
     # print(model)
     # torch.distributed.init_process_group()

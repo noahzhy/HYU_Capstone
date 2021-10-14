@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models._utils as _utils
 import torchvision.models.detection.backbone_utils as backbone_utils
-from config.config import cfg_re50, cfg_shuffle, cfg_shufflev2, cfg_shuffle_ex
+from config.config import cfg_re50, cfg_shuffle, cfg_shufflev2
 from models.head.head import (make_cls_head, make_emb_head, make_loc_head,
                               task_specific_cls, task_specific_emb,
                               task_specific_loc)
@@ -148,4 +148,3 @@ if __name__ == '__main__':
                                             print_per_layer_stat=True, verbose=True)
     print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
     print('{:<30}  {:<8}'.format('Number of parameters: ', params))
-

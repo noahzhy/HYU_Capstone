@@ -52,7 +52,7 @@ The total track ID of MOT17 dataset is 547, therefore the last full content laye
 | Architecture      | Resolution | Parameters (M) | MAC (G) |
 | ----------------- | ---------- | -------------- | ------- |
 | RetinaTrack       | 640x640    | 32.67          | 140.16  |
-| ShuffleTrack(our) | 640x640    | 3.34           | 29.54   |
+| ShuffleTrack(our) | 640x640    | 3.27           | 29.54   |
 
 
 
