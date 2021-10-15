@@ -28,6 +28,7 @@ class ShuffleTrackNet(nn.Module):
         super(ShuffleTrackNet, self).__init__()
         self.phase = phase
         backbone = None
+        self.n_class = cfg['n_class']
 
         if cfg['name'] == 'Resnet50':
             import torchvision.models as models
@@ -105,18 +106,15 @@ class ShuffleTrackNet(nn.Module):
                 loc_task_feature = self.loc_task(per_anchor_feature)
                 emb_task_feature = self.emb_task(per_anchor_feature)
                 # cls feature,only one class but with background total class is two
-                cls_head = self.cls_heads[i *
-                                          len(per_fpn_features) + j](cls_task_feature)
+                cls_head = self.cls_heads[i * len(per_fpn_features) + j](cls_task_feature)
                 cls_head = cls_head.permute(0, 2, 3, 1).contiguous().view(
                     cls_head.shape[0], -1, 2)
                 # loc frature,(x,y,w,h)
-                loc_head = self.loc_heads[i *
-                                          len(per_fpn_features) + j](loc_task_feature)
+                loc_head = self.loc_heads[i * len(per_fpn_features) + j](loc_task_feature)
                 loc_head = loc_head.permute(0, 2, 3, 1).contiguous().view(
                     loc_head.shape[0], -1, 4)
                 # emb feature with 256 dim
-                emb_head = self.emb_heads[i *
-                                          len(per_fpn_features) + j](emb_task_feature)
+                emb_head = self.emb_heads[i * len(per_fpn_features) + j](emb_task_feature)
                 emb_head = emb_head.permute(0, 2, 3, 1).contiguous().view(
                     emb_head.shape[0], -1, 128)
 

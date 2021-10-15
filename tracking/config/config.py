@@ -49,7 +49,7 @@ cfg_shuffle = {
 
 cfg_shufflev2 = {
     'name': 'ShuffleNetV2',
-    'min_sizes': [[16, 32], [64, 128], [256, 512]],
+    'min_sizes': [[32, 8], [64, 16], [128, 32], [512, 128]],
     'anchorNum_per_stage': 2,
     'steps': [8, 16, 32],
     'variance': [0.1, 0.2],
@@ -64,6 +64,7 @@ cfg_shufflev2 = {
     'ShuffleNetV2_return_layers': {'layer1': 1, 'layer2': 2, 'layer3': 3},
     'in_channel': 58,
     'out_channel': 128,
+    'n_class': 12,
     'ShuffleNetV2': {
         'out_planes': [200, 400, 800],
         'stage_repeats': [4, 8, 4],

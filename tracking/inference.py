@@ -18,7 +18,7 @@ from utils.prior_box import PriorBox
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--trained_model', default='epoch_5_loss_3.265981674194336.pth',
+parser.add_argument('--trained_model', default='epoch_26_loss_0.32541725039482117.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--confidence_threshold', default=0.1,
                     type=float, help='confidence_threshold')
@@ -26,7 +26,7 @@ parser.add_argument('--nms_threshold', default=0.3,
                     type=float, help='nms_threshold')
 parser.add_argument('--vis_thres', default=0.1, type=float,
                     help='visualization_threshold')
-parser.add_argument('--image', default='images/000006.jpg',
+parser.add_argument('--image', default='images/000001.jpg',
                     help='test image path')
 parser.add_argument('--save_path',
                     default='images/result_img_01.jpg',
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     model.eval()
     img_raw = cv2.imread(args.image)
     img = cv2.resize(img_raw,(640,640))
-    _,im_height,im_width= img.shape
+    _, im_height, im_width = img.shape
     img = img.transpose(2, 0, 1)
     img = np.ascontiguousarray(img)
     img = torch.from_numpy(img).unsqueeze(0).cuda()

@@ -1,13 +1,16 @@
-import torch
+import copy
 import sys
 sys.path.append('./')
+
+import torch
+import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.autograd import Variable
-from utils.box_utils import match, log_sum_exp,decode
-import copy
-import numpy as np
 import torchvision
+from torch.autograd import Variable
+
+from utils.box_utils import decode, log_sum_exp, match
+
 
 class MultiBoxLoss(nn.Module):
     """SSD Weighted Loss Function
@@ -45,7 +48,7 @@ class MultiBoxLoss(nn.Module):
         self.variance = [0.1, 0.2]
         self.is_cuda = is_cuda
         self.idLoss = nn.CrossEntropyLoss(ignore_index=-1,reduction='sum')
-        
+
     def forward(self, predictions, priors, targets):
         """Multibox Loss
         Args:
@@ -54,9 +57,7 @@ class MultiBoxLoss(nn.Module):
             targets (tensor): Ground truth boxes and labels for a batch,
             shape: [batch_size,num_objs,5] (batch_index,classification,xc,yc,w,h,ids).
         """
-
         loc_data, conf_data, classifier_data = predictions
-        #print('&&&',loc_data.shape,classifier_data.shape)
         priors = priors
         num = loc_data.size(0)
         num_priors = (priors.size(0))
