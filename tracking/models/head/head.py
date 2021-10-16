@@ -28,7 +28,7 @@ def task_specific_emb(inp, oup, stride = 1, leaky = 0, m3 = 2):
     nn.Sequential(*peranchor_feature)
     return nn.Sequential(*peranchor_feature)
 
-def make_cls_head(inp, oup = 2, fpnNum = 3, anchorNum = 2):
+def make_cls_head(inp, oup = 12, fpnNum = 3, anchorNum = 2):
     cls_heads = nn.ModuleList()
     for i in range(fpnNum):
         for j in range(anchorNum):

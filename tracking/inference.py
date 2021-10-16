@@ -18,15 +18,15 @@ from utils.prior_box import PriorBox
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--trained_model', default='epoch_30_loss_0.7766364812850952.pth',
+parser.add_argument('--trained_model', default='../epoch_17_loss_0.5424529314041138.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--confidence_threshold', default=0.1,
                     type=float, help='confidence_threshold')
-parser.add_argument('--nms_threshold', default=0.2,
+parser.add_argument('--nms_threshold', default=0.3,
                     type=float, help='nms_threshold')
 parser.add_argument('--vis_thres', default=0.1, type=float,
                     help='visualization_threshold')
-parser.add_argument('--image', default='images/000024.jpg',
+parser.add_argument('--image', default='images/000025.jpg',
                     help='test image path')
 parser.add_argument('--save_path',
                     default='images/result_img_01.jpg',
@@ -77,7 +77,7 @@ if __name__ == '__main__':
         print(list(map(float, b)))
         if b[4] < args.vis_thres:
             continue
-        text = "id: {:d}".format(int(b[5]))
+        text = "id: {:d} conf: {:.2f}".format(int(b[5]), b[4])
         # print(text)
         b = list(map(int, b))
         cv2.rectangle(img_raw, (b[0], b[1]), (b[2], b[3]), (0, 255, 0), 2)

@@ -72,7 +72,7 @@ class MultiBoxLoss(nn.Module):
         conf_t = torch.LongTensor(num, num_priors)
 
         for idx in range(num):
-            targets[idx][:, 1] = 1
+            # targets[idx][:, 1] = 1
             truths = targets[idx][:, 2:6].data
             labels = targets[idx][:, 1].data
             classifiers = targets[idx][:, 6].data

@@ -91,7 +91,6 @@ class Detdataset(Dataset):
                     self.target.append(data[0:100])
 
     def __getitem__(self, index):
-
         img = cv2.imread(self.images[index])
         img = cv2.resize(img, (640, 640))
         targets = self.target[index]

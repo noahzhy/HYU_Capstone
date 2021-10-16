@@ -108,7 +108,7 @@ class ShuffleTrackNet(nn.Module):
                 # cls feature,only one class but with background total class is two
                 cls_head = self.cls_heads[i * len(per_fpn_features) + j](cls_task_feature)
                 cls_head = cls_head.permute(0, 2, 3, 1).contiguous().view(
-                    cls_head.shape[0], -1, 2)
+                    cls_head.shape[0], -1, 12)
                 # loc frature,(x,y,w,h)
                 loc_head = self.loc_heads[i * len(per_fpn_features) + j](loc_task_feature)
                 loc_head = loc_head.permute(0, 2, 3, 1).contiguous().view(
