@@ -16,6 +16,7 @@ from torch.autograd import Variable
 # from data import coco, config
 from data.coco import *
 from data.config import *
+from utils.prior_box import PriorBox
 from utils.multibox_loss import MultiBoxLoss_OD
 from utils.augmentations import SSDAugmentation
 from models.model.shuffletrack import ShuffleTrackNet
@@ -175,21 +176,24 @@ def train():
         if args.cuda:
             images = Variable(images.cuda())
             targets = [Variable(ann.cuda(), volatile=True) for ann in targets]
-        else:
-            images = Variable(images)
-            targets = [Variable(ann, volatile=True) for ann in targets]
+            priorbox = PriorBox(cfg_shufflev2)
+            priors = priorbox.forward()
+            priors = Variable(priors.cuda())
+        # else:
+        #     images = Variable(images)
+        #     targets = [Variable(ann, volatile=True) for ann in targets]
         # forward
         t0 = time.time()
         out = net(images)
         # backprop
         optimizer.zero_grad()
-        loss_l, loss_c = criterion(out, targets)
+        loss_l, loss_c = criterion(out, [targets, priors])
         loss = loss_l + loss_c
         loss.backward()
         optimizer.step()
         t1 = time.time()
-    #  loc_loss += loss_l.data[0]    #this line gives 0-dim error!
-    # conf_loss += loss_c.data[0]   #this line gives 0-dim error!
+        # loc_loss += loss_l.data[0]    #this line gives 0-dim error!
+        # conf_loss += loss_c.data[0]   #this line gives 0-dim error!
         loc_loss += loss_l.data.item()  #correction: added.item()
         conf_loss += loss_c.data.item()     #correction: added.item()
 

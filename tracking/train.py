@@ -43,10 +43,7 @@ def train(model, train_loader):
                 priors = priorbox.forward()
                 priors = priors.cuda()
             loss_l, loss_c, loss_id = criterion(outputs, priors, target)
-            if epoch > 20:
-                loss = loss_l + loss_c + loss_id
-            else:
-                loss = loss_l + loss_c
+            loss = loss_l + loss_c + loss_id
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
