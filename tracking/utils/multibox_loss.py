@@ -50,7 +50,7 @@ class MultiBoxLoss_OD(nn.Module):
         self.do_neg_mining = neg_mining
         self.negpos_ratio = neg_pos
         self.neg_overlap = neg_overlap
-        self.variance = cfg['variance']
+        self.variance = [0.1, 0.2]
 
     def forward(self, predictions, targets):
         """Multibox Loss
