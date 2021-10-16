@@ -187,7 +187,7 @@ def train():
         out = net(images)
         # backprop
         optimizer.zero_grad()
-        loss_l, loss_c = criterion(out, [targets, priors])
+        loss_l, loss_c = criterion([out, priors], targets)
         loss = loss_l + loss_c
         loss.backward()
         optimizer.step()
