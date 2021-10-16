@@ -21,7 +21,7 @@ from utils.augmentations import SSDAugmentation
 from models.model.shuffletrack import ShuffleTrackNet
 from config.config import cfg_re50, cfg_shuffle, cfg_shufflev2
 
-COCO_ROOT = 'C:/Users/go/data/coco'
+COCO_ROOT = '/home/ubuntu/data/coco'
 VOC_ROOT = ''
 
 def str2bool(v):
