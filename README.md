@@ -54,12 +54,14 @@ The total track ID of MOT17 dataset is 547, therefore the last full content laye
 
 ## Parameters and MAC
 
-| Architecture      | Resolution | Parameters (M) | MAC (G) |
-| ----------------- | ---------- | -------------- | ------- |
-| RetinaTrack       | 640x640    | 32.67          | 140.16  |
-| ShuffleTrack(our) | 640x640    | 3.32           | 29.53   |
+| Architecture      | Resolution | Anchors | Parameters (M) | MAC (G) |
+| ----------------- | ---------- | ------- |--------------- | ------- |
+| RetinaTrack       | 640x640 | 3  | 26.57       | 99.4 |
+| RetinaTrack       | 640x640  | 6  | 28.07  | 392.5   |
+| ShuffleTrack(our) | 640x640  | 3 | 3.83           | 66.59   |
+| ShuffleTrack(our) | 640x640  | 6  | 5.32     | 359.69 |
 
-
+When numbers of anchor are three, output channels are 128. 
 
 ## Results (MOT17)
 
