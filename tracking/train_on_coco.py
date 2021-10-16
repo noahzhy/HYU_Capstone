@@ -62,15 +62,15 @@ parser.add_argument('--save_folder', default='weights/',
 args = parser.parse_args()
 
 
-if torch.cuda.is_available():
-    if args.cuda:
-        torch.set_default_tensor_type('torch.cuda.FloatTensor')
-    if not args.cuda:
-        print("WARNING: It looks like you have a CUDA device, but aren't " +
-              "using CUDA.\nRun with --cuda for optimal training speed.")
-        torch.set_default_tensor_type('torch.FloatTensor')
-else:
-    torch.set_default_tensor_type('torch.FloatTensor')
+# if torch.cuda.is_available():
+#     if args.cuda:
+#         torch.set_default_tensor_type('torch.cuda.FloatTensor')
+#     if not args.cuda:
+#         print("WARNING: It looks like you have a CUDA device, but aren't " +
+#               "using CUDA.\nRun with --cuda for optimal training speed.")
+#         torch.set_default_tensor_type('torch.FloatTensor')
+# else:
+#     torch.set_default_tensor_type('torch.FloatTensor')
 
 if not os.path.exists(args.save_folder):
     os.mkdir(args.save_folder)
@@ -188,15 +188,19 @@ def train():
         loss.backward()
         optimizer.step()
         t1 = time.time()
-        loc_loss += loss_l.data[0]
-        conf_loss += loss_c.data[0]
+    #  loc_loss += loss_l.data[0]    #this line gives 0-dim error!
+    # conf_loss += loss_c.data[0]   #this line gives 0-dim error!
+        loc_loss += loss_l.data.item()  #correction: added.item()
+        conf_loss += loss_c.data.item()     #correction: added.item()
 
         if iteration % 10 == 0:
             print('timer: %.4f sec.' % (t1 - t0))
-            print('iter ' + repr(iteration) + ' || Loss: %.4f ||' % (loss.data[0]), end=' ')
+            # print('iter ' + repr(iteration) + ' || Loss: %.4f ||' % (loss.data[0]), end=' ')
+            print('iter ' + repr(iteration) + ' || Loss: %.4f ||' % (loss.data.item()), end=' ')
 
         if args.visdom:
-            update_vis_plot(iteration, loss_l.data[0], loss_c.data[0],
+            # update_vis_plot(iteration, loss_l.data[0], loss_c.data[0],
+            update_vis_plot(iteration, loss_l.data.item(), loss_c.data.item(),
                             iter_plot, epoch_plot, 'append')
 
         if iteration != 0 and iteration % 5000 == 0:
