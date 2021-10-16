@@ -100,8 +100,8 @@ def train():
         import visdom
         viz = visdom.Visdom()
 
-    cfg = cfg_shufflev2
-    net = ShuffleTrackNet(cfg=cfg)
+    # cfg = cfg_shufflev2
+    net = ShuffleTrackNet(cfg=cfg_shufflev2)
 
     # if args.cuda:
     #     net = torch.nn.DataParallel(ssd_net)
