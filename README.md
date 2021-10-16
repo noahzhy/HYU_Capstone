@@ -11,8 +11,13 @@ The first lightweight architecture that come to mind is shufflenet. It's every c
 | Two 3x3 depth-wise conv with 32 channels                     | Single 5x5 depth-wise conv with 32 channels              |
 | $(3\times3\times32+32\times32)\times2=2624$                  | $5\times5\times32+32\times32=1824$                       |
 
-<img src="images/5x5_unit.png" alt="5x5_unit" style="zoom:50%" />
+<img src="images/5x5_unit.png" alt="5x5_unit" style="zoom:60%" />
+
 The two basic unit of shufflenet after modification.
+
+The detail of CBAM module is as following.
+
+<img src="images/fig1.jpg" alt="fig1" style="zoom:50%;" />
 
 Comparing with original architecture with modified architecture.
 
@@ -52,7 +57,7 @@ The total track ID of MOT17 dataset is 547, therefore the last full content laye
 | Architecture      | Resolution | Parameters (M) | MAC (G) |
 | ----------------- | ---------- | -------------- | ------- |
 | RetinaTrack       | 640x640    | 32.67          | 140.16  |
-| ShuffleTrack(our) | 640x640    | 3.27           | 29.54   |
+| ShuffleTrack(our) | 640x640    | 3.32           | 29.53   |
 
 
 

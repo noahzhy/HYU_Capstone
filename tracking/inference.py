@@ -18,15 +18,15 @@ from utils.prior_box import PriorBox
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--trained_model', default='epoch_26_loss_0.32541725039482117.pth',
+parser.add_argument('--trained_model', default='epoch_30_loss_0.7766364812850952.pth',
                     type=str, help='Trained state_dict file path to open')
 parser.add_argument('--confidence_threshold', default=0.1,
                     type=float, help='confidence_threshold')
-parser.add_argument('--nms_threshold', default=0.3,
+parser.add_argument('--nms_threshold', default=0.2,
                     type=float, help='nms_threshold')
 parser.add_argument('--vis_thres', default=0.1, type=float,
                     help='visualization_threshold')
-parser.add_argument('--image', default='images/000001.jpg',
+parser.add_argument('--image', default='images/000024.jpg',
                     help='test image path')
 parser.add_argument('--save_path',
                     default='images/result_img_01.jpg',

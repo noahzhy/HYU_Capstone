@@ -49,7 +49,8 @@ cfg_shuffle = {
 
 cfg_shufflev2 = {
     'name': 'ShuffleNetV2',
-    'min_sizes': [[32, 8], [64, 16], [128, 32], [512, 128]],
+    'min_sizes': [[24, 8], [48, 16], [96, 32], [384, 128]],
+    # 'min_sizes': [[16, 32], [64, 128], [256, 512]],
     'anchorNum_per_stage': 2,
     'steps': [8, 16, 32],
     'variance': [0.1, 0.2],

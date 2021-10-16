@@ -28,8 +28,10 @@ CFG = cfg_shufflev2
 
 
 def train(model, train_loader):
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9, weight_decay=5e-4)
+    # optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9, weight_decay=5e-4)
+    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
     criterion = MultiBoxLoss(2, 0.35, True, 0, True, 5, 0.35, False)
+
     for epoch in range(1, CFG['epoch']+1):
         tqdm_train = tqdm(train_loader)
         for img, target in tqdm_train:
@@ -41,7 +43,10 @@ def train(model, train_loader):
                 priors = priorbox.forward()
                 priors = priors.cuda()
             loss_l, loss_c, loss_id = criterion(outputs, priors, target)
-            loss = loss_l + loss_c + loss_id
+            if epoch > 20:
+                loss = loss_l + loss_c + loss_id
+            else:
+                loss = loss_l + loss_c
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
