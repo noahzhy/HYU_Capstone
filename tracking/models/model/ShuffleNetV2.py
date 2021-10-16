@@ -173,7 +173,7 @@ class ShuffleV2Block(nn.Module):
                 # pw-linear
                 nn.Conv2d(oup_inc, oup_inc, 1, 1, 0, bias=False),
                 nn.BatchNorm2d(oup_inc),
-                nn.ReLU(inplace=True),
+                # nn.ReLU(inplace=True),
                 CBAM(gate_channels=oup_inc),
             )                
         else:                  
@@ -198,7 +198,7 @@ class ShuffleV2Block(nn.Module):
                 # pw-linear
                 nn.Conv2d(oup_inc, oup_inc, 1, 1, 0, bias=False),
                 nn.BatchNorm2d(oup_inc),
-                nn.ReLU(inplace=True),
+                # nn.ReLU(inplace=True),
                 CBAM(gate_channels=oup_inc),
             )
 
