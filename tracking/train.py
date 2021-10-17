@@ -29,9 +29,9 @@ CFG = cfg_shufflev2
 
 
 def train(model, train_loader):
-    # optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9, weight_decay=5e-4)
-    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
-    criterion = MultiBoxLoss(12, 0.35, True, 0, True, 3, 0.35, False)
+    optimizer = optim.SGD(model.parameters(), lr=0.005, momentum=0.9, weight_decay=5e-4)
+    # optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
+    criterion = MultiBoxLoss(12, 0.35, True, 0, True, 5, 0.35, False)
 
     for epoch in range(1, CFG['epoch']+1):
         tqdm_train = tqdm(train_loader)
