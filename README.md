@@ -34,21 +34,24 @@ Comparing with original architecture with modified architecture.
 | Layer           | Output size   | Output channels | After modification |
 | --------------- | ------------- | --------------- | -------------- |
 | Image input     | 640x640       | 3               | 3              |
-| Conv1, MaxPool | 320x320, 160x160 | 24              | 24             |
+| Conv1, MaxPool  | 320x320, 160x160 | 24              | 24          |
 | Stage2          | 80x80         | 176             | 132            |
 | Stage3          | 40x40         | 352             | 264            |
 | Stage4          | 20x20         | 704             | 528            |
 
 
 
-
 ## ShuffleTrack Architecture
+
+The original JDE model is as following.
+
+<img src="images/JDE.jpg" alt="JDE" style="zoom:50%;" />
+
+The shuffletrack architecture is as following.
 
 ![architecture](images/architecture.png)
 
-Firstly, I constructed an object detection network using the modification of shufflenet v2 as backbone to extract feature, connect with the feature map of stage2, stage3, stage4 from backbone as FPN. In the JDE, embedding in prediction head with a 256 channels for ID tracking but 256 channel would causes overfitting. Therefore, I added a 128-dimensional branch of feature embeddings. In the JDE, each prediction head lacks of parameter sharing. To deal with this problem, I add depthwise separable convolution blocks to share the parameters between different branch of FPN. In the last layer, the 
-
-The total track ID of MOT17 dataset is 547, therefore the last full content layer is set to 547 to matching each track ID as each classifiers.
+Firstly, I constructed an object detection network using the modification of shufflenet v2 as backbone to extract feature, connect with the feature map of stage2, stage3, stage4 from backbone as FPN. In the JDE, embedding in prediction head with a 256 channels for ID tracking but 256 channel would causes overfitting. Therefore, I added a 128-dimensional branch of feature embeddings. In the JDE, each prediction head lacks of weight sharing. To deal with this problem, I add depthwise separable convolution blocks to share the parameters between different branch of FPN. Refer to the last layer of JDE model, the last full content layer is set to 547 to matching each track ID. The JDE extracts the embedding for each object, then using Kalman filter for tracking but shuffletrack 
 
 Part of loss function, I referred to SSD loss function which CE loss (Cross Entropy Loss) for the classification and embedding, smooth L1 loss for box regression.
 
@@ -56,7 +59,9 @@ Part of loss function, I referred to SSD loss function which CE loss (Cross Entr
 
 ## Training
 
-The model is training on the AWS GPU instances with one Tesla V100. I was tried to training on multiple GPUs, but 
+The model is training on the AWS GPU instance with one Tesla V100. I was tried to training on multiple GPUs, but it failed.
+
+There are some changes in object detection parts, it need to be retrain the object detector. Thus I need to retrain the detector at first, then training the whole model. It needs more time. At the head of this document, I've included a link to my GitHub, and I'll update this document again when it's all trained.
 
 
 
@@ -64,8 +69,8 @@ The model is training on the AWS GPU instances with one Tesla V100. I was tried 
 ## Parameters and MAC
 
 | Architecture      | Resolution |  Parameters (M) | MAC (G) |
-| ----------------- | ---------- | -------------- | ------- |
-| ShuffleTrack(our) | 640x640 | 2.55        | 13.21 |
+| ----------------- | ---------- | --------------- | ------- |
+| ShuffleTrack(our) | 640x640    | 2.55            | 13.21   |
 
 
 
@@ -76,7 +81,7 @@ The model is training on the AWS GPU instances with one Tesla V100. I was tried 
 | Tracktor          |35.30|106006|15617|16652|36.17|45|
 | Tracktor++        |37.94|112801|15642|10370|36.17|2645|
 | RetinaTrack       |39.19|112025|11669|5712|38.24|70|
-| ShuffleTrack(our) |       |       | | | |20*|
+| ShuffleTrack(our) |       |       | | | |20|
 
 
 
@@ -90,5 +95,4 @@ The model is training on the AWS GPU instances with one Tesla V100. I was tried 
 
 * [ShuffleNetV2](docs/shuffleNetV2.pdf)
 * [JDE](https://arxiv.org/pdf/1909.12605v1.pdf)
-* [RetinaTrack](docs/retinarrack.pdf)
 
