@@ -54,6 +54,10 @@ Part of loss function, I referred to SSD loss function which CE loss (Cross Entr
 
 
 
+## Training
+
+The model is training on the AWS GPU instances with one Tesla V100. I was tried to training on 
+
 
 
 
@@ -61,7 +65,7 @@ Part of loss function, I referred to SSD loss function which CE loss (Cross Entr
 
 | Architecture      | Resolution |  Parameters (M) | MAC (G) |
 | ----------------- | ---------- | -------------- | ------- |
-| ShuffleTrack(our) | 640x640 | 2.55        | 13.23 |
+| ShuffleTrack(our) | 640x640 | 2.55        | 13.21 |
 
 
 
