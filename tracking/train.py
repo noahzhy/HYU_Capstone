@@ -35,7 +35,7 @@ def train(model, train_loader):
     scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer,
         milestones=[
-            int(0.1 * epochs),
+            int(0.05 * epochs),
             int(0.5 * epochs),
             int(0.75 * epochs)
         ],
