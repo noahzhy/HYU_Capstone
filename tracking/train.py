@@ -55,7 +55,8 @@ def train(model, train_loader):
 
 
 if __name__ == '__main__':
-    gtds = Gtdataset()
+    # gtds = Gtdataset()
+    gtds = Detdataset()
     trainloader = DataLoader(gtds, batch_size=32, shuffle=True)
     model = ShuffleTrackNet(cfg=CFG).cuda()
     # print(model)

@@ -56,35 +56,37 @@ class Gtdataset(Dataset):
 
 
 class Detdataset(Dataset):
-    def __init__(self, data_path='../MOT17/train'):
+    def __init__(self, data_path='../MOT17'):
         self.images = []
         self.target = []
-        for video in os.listdir(data_path):
-            video_path = os.path.join(data_path, video)
-            f = open(os.path.join(video_path, 'det', 'det.txt'), 'r')
-            txt = f.readlines()
-            maps = {}
-            for str_data in txt:
-                data = str_data.split(',')
-                data = list(map(float, data))
-                frame = data[0]
-                if frame not in maps:
-                    maps[frame] = []
-                data[2] = data[2]/1920+data[4]/1920/2
-                data[3] = data[3]/1080+data[5]/1080/2
-                data[4] = data[4]/1920
-                data[5] = data[5]/1080
-                data[1], data[6] = data[6], data[1]
-                maps[frame].append(data[0:7])
-            for img in os.listdir(os.path.join(video_path, 'img1')):
-                if int(img.split('.')[0]) in maps:
-                    self.images.append(os.path.join(video_path, 'img1', img))
-                    data = np.array(maps[int(img.split('.')[0])])
-                    b = np.zeros((1, 7))
-                    rows = len(data)
-                    for i in range(100-rows):
-                        data = np.row_stack((data, b))
-                    self.target.append(data[0:100])
+        for ds in os.listdir(data_path):
+            ds_path = os.path.join(data_path, ds)
+            for video in os.listdir(ds_path):
+                video_path = os.path.join(ds_path, video)
+                f = open(os.path.join(video_path, 'det', 'det.txt'), 'r')
+                txt = f.readlines()
+                maps = {}
+                for str_data in txt:
+                    data = str_data.split(',')
+                    data = list(map(float, data))
+                    frame = data[0]
+                    if frame not in maps:
+                        maps[frame] = []
+                    data[2] = data[2]/1920+data[4]/1920/2
+                    data[3] = data[3]/1080+data[5]/1080/2
+                    data[4] = data[4]/1920
+                    data[5] = data[5]/1080
+                    data[1], data[6] = data[6], data[1]
+                    maps[frame].append(data[0:7])
+                for img in os.listdir(os.path.join(video_path, 'img1')):
+                    if int(img.split('.')[0]) in maps:
+                        self.images.append(os.path.join(video_path, 'img1', img))
+                        data = np.array(maps[int(img.split('.')[0])])
+                        b = np.zeros((1, 7))
+                        rows = len(data)
+                        for i in range(100-rows):
+                            data = np.row_stack((data, b))
+                        self.target.append(data[0:100])
 
     def __getitem__(self, index):
         img = cv2.imread(self.images[index])
