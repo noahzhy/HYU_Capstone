@@ -65,8 +65,7 @@ class ShuffleTrackNet(nn.Module):
         self.ssh2 = SSH(out_channels, out_channels)
         self.ssh3 = SSH(out_channels, out_channels)
         # task shared
-        self.task_shared = task_shared(
-            out_channels, out_channels, anchorNum=anchorNum)
+        self.task_shared = task_shared(out_channels, out_channels, anchorNum=anchorNum)
         # task specific
         self.cls_task = task_specific_cls(out_channels, out_channels)
         self.loc_task = task_specific_loc(out_channels, out_channels)

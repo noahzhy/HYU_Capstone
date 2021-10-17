@@ -2,7 +2,7 @@
 cfg_re50 = {
     'name': 'Resnet50',
     'min_sizes': [[16, 32], [64, 128], [256, 512]],
-    'anchorNum_per_stage': 3,
+    'anchorNum_per_stage': 2,
     'steps': [8, 16, 32],
     'variance': [0.1, 0.2],
     'clip': False,
