@@ -25,12 +25,22 @@ from utils.augmentations import SSDAugmentation
 
 
 CFG = cfg_shufflev2
+epochs = CFG['epoch']
 # torch.cuda.set_device(3)
 
 
 def train(model, train_loader):
     # optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9, weight_decay=5e-4)
     optimizer = optim.Adam(model.parameters(), lr=0.005, weight_decay=5e-4)
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(
+        optimizer,
+        milestones=[
+            int(0.1 * epochs),
+            int(0.5 * epochs),
+            int(0.75 * epochs)
+        ],
+        gamma=0.1
+    )
     criterion = MultiBoxLoss(12, 0.35, True, 0, True, 5, 0.35, False)
 
     for epoch in range(1, CFG['epoch']+1):
@@ -52,6 +62,8 @@ def train(model, train_loader):
                 f'epoch: {epoch}, total loss: {loss.item()}')
         state = {'net': model.state_dict(), 'epoch': epoch}
         torch.save(state, 'epoch_{}_loss_{}.pth'.format(epoch, loss.item()))
+
+        scheduler.step()
 
 
 if __name__ == '__main__':

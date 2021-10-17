@@ -56,7 +56,7 @@ Part of loss function, I referred to SSD loss function which CE loss (Cross Entr
 
 ## Training
 
-The model is training on the AWS GPU instances with one Tesla V100. I was tried to training on 
+The model is training on the AWS GPU instances with one Tesla V100. I was tried to training on multiple GPUs, but 
 
 
 
