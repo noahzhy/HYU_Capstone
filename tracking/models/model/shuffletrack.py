@@ -70,19 +70,16 @@ class ShuffleTrackNet(nn.Module):
         # task specific
         self.cls_task = task_specific_cls(out_channels, out_channels)
         self.loc_task = task_specific_loc(out_channels, out_channels)
-        if not self.coco:
-            self.emb_task = task_specific_emb(out_channels, out_channels)
+        self.emb_task = task_specific_emb(out_channels, out_channels)
         # head
         self.cls_heads = make_cls_head(inp=out_channels, fpnNum=len(
             in_channels_list), anchorNum=anchorNum)
         self.loc_heads = make_loc_head(inp=out_channels, fpnNum=len(
             in_channels_list), anchorNum=anchorNum)
-        if not self.coco:
-            self.emb_heads = make_emb_head(inp=out_channels, fpnNum=len(
-            in_channels_list), anchorNum=anchorNum)
-        if not self.coco:
-            # classifier
-            self.classifier = nn.Linear(128, 547)
+        self.emb_heads = make_emb_head(inp=out_channels, fpnNum=len(
+        in_channels_list), anchorNum=anchorNum)
+        # classifier
+        self.classifier = nn.Linear(128, 547)
 
     def forward(self, inputs):
         out = self.body(inputs)
@@ -106,34 +103,29 @@ class ShuffleTrackNet(nn.Module):
             for j, per_anchor_feature in enumerate(per_fpn_features):
                 cls_task_feature = self.cls_task(per_anchor_feature)
                 loc_task_feature = self.loc_task(per_anchor_feature)
+                emb_task_feature = self.emb_task(per_anchor_feature)
                 # cls feature,only one class but with background total class is two
                 cls_head = self.cls_heads[i * len(per_fpn_features) + j](cls_task_feature)
-                cls_head = cls_head.permute(0, 2, 3, 1).contiguous().view(cls_head.shape[0], -1, 12)
-                # loc frature,(x,y,w,h)
                 loc_head = self.loc_heads[i * len(per_fpn_features) + j](loc_task_feature)
+                emb_head = self.emb_heads[i * len(per_fpn_features) + j](emb_task_feature)
+                # loc frature,(x,y,w,h)
+                cls_head = cls_head.permute(0, 2, 3, 1).contiguous().view(cls_head.shape[0], -1, 12)
                 loc_head = loc_head.permute(0, 2, 3, 1).contiguous().view(loc_head.shape[0], -1, 4)
+                emb_head = emb_head.permute(0, 2, 3, 1).contiguous().view(emb_head.shape[0], -1, 128)
+                # emb feature with 128 dim
                 cls_heads.append(cls_head)
                 loc_heads.append(loc_head)
+                emb_heads.append(emb_head)
 
-                if not self.coco:
-                    emb_task_feature = self.emb_task(per_anchor_feature)
-                    # emb feature with 128 dim
-                    emb_head = self.emb_heads[i * len(per_fpn_features) + j](emb_task_feature)
-                    emb_head = emb_head.permute(0, 2, 3, 1).contiguous().view(emb_head.shape[0], -1, 128)
-                    emb_heads.append(emb_head)
 
         bbox_regressions = torch.cat(
             [feature for i, feature in enumerate(loc_heads)], dim=1)
         classifications = torch.cat(
             [feature for i, feature in enumerate(cls_heads)], dim=1)
-        if not self.coco:
-            emb_features = torch.cat(
-                [feature for i, feature in enumerate(emb_heads)], dim=1)
-            classifier = self.classifier(emb_features)
-
-            return [bbox_regressions, classifications, classifier]
-        else:
-            return [bbox_regressions, classifications]
+        emb_features = torch.cat(
+            [feature for i, feature in enumerate(emb_heads)], dim=1)
+        classifier = self.classifier(emb_features)
+        return [bbox_regressions, classifications, classifier]
 
 
 if __name__ == '__main__':

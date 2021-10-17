@@ -196,7 +196,7 @@ class MultiBoxLoss(nn.Module):
         # classifier Loss (Smooth L1)
         # Shape: [batch,num_priors,10]
         pos = conf_t > 0
-        num_pos = pos.sum(dim=1, keepdim=True)
+        # num_pos = pos.sum(dim=1, keepdim=True)
         # conf_t[pos] = 1
 
         # Localization Loss (Smooth L1)
