@@ -92,6 +92,12 @@ I trained for a few epoches, according to the output of ID, the tracing part is 
 | ![result_01](images/result_01.jpg) | ![result_02](images/result_02.jpg) |
 | ----------------------------------------------------------- | ----------------------------------------------------------- |
 
+[2021/10/18 22:07] After training a few epoches, the detection results as following. Still training now, it's not finish yet.
+
+| sample_01                 | sample_02           |
+| :-----------------------: | :-----------------: |
+| <img src="images/trained_detector.jpg" alt="trained_detector" style="zoom: 33%;" /> | <img src="images/trained_detector_02.jpg" alt="trained_detector" style="zoom: 33%;" /> |
+
 
 
 ## Reference
