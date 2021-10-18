@@ -89,7 +89,7 @@ There are some changes in object detection parts, it need to be retrain the obje
 
 I trained for a few epoches, according to the output of ID, the tracing part is not a problem. But there's a big problem with the detector from the results. I'm training the detector now.
 
-| ![result_01](C:\Projects\HYU_Capstone\images\result_01.jpg) | ![result_02](C:\Projects\HYU_Capstone\images\result_02.jpg) |
+| ![result_01](images/result_01.jpg) | ![result_02](images/result_02.jpg) |
 | ----------------------------------------------------------- | ----------------------------------------------------------- |
 
 
