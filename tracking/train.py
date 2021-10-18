@@ -30,12 +30,12 @@ epochs = CFG['epoch']
 
 
 def train(model, train_loader):
-    # optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9, weight_decay=5e-4)
-    optimizer = optim.Adam(model.parameters(), lr=0.005, weight_decay=5e-4)
+    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
+    # optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer,
         milestones=[
-            int(0.05 * epochs),
+            int(0.1 * epochs),
             int(0.5 * epochs),
             int(0.75 * epochs)
         ],
