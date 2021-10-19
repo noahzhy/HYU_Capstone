@@ -54,8 +54,8 @@ def train(model, train_loader):
                 priors = priorbox.forward()
                 priors = priors.cuda()
             loss_l, loss_c, loss_id = criterion(outputs, priors, target)
-            # loss = loss_l + loss_c + loss_id
-            loss = loss_l + loss_c
+            loss = loss_l + loss_c + loss_id
+            # loss = loss_l + loss_c
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()

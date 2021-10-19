@@ -124,7 +124,7 @@ class ShuffleTrackNet(nn.Module):
         emb_features = torch.cat(
             [feature for i, feature in enumerate(emb_heads)], dim=1)
 
-        classifier = self.drop(classifier)
+        emb_features = self.drop(emb_features)
         classifier = self.classifier(emb_features)
         return [bbox_regressions, classifications, classifier]
 
