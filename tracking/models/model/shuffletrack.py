@@ -77,7 +77,7 @@ class ShuffleTrackNet(nn.Module):
             in_channels_list), anchorNum=anchorNum)
         self.emb_heads = make_emb_head(inp=out_channels, fpnNum=len(
         in_channels_list), anchorNum=anchorNum)
-        self.drop = nn.Dropout(0.5)
+        self.drop = nn.Dropout(0.25)
         # classifier
         self.classifier = nn.Linear(128, 547)
 
@@ -117,15 +117,15 @@ class ShuffleTrackNet(nn.Module):
                 loc_heads.append(loc_head)
                 emb_heads.append(emb_head)
 
-
         bbox_regressions = torch.cat(
             [feature for i, feature in enumerate(loc_heads)], dim=1)
         classifications = torch.cat(
             [feature for i, feature in enumerate(cls_heads)], dim=1)
         emb_features = torch.cat(
             [feature for i, feature in enumerate(emb_heads)], dim=1)
-        classifier = self.classifier(emb_features)
+
         classifier = self.drop(classifier)
+        classifier = self.classifier(emb_features)
         return [bbox_regressions, classifications, classifier]
 
 
