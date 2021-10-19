@@ -30,8 +30,8 @@ epochs = CFG['epoch']
 
 
 def train(model, train_loader):
-    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
-    # optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
+    # optimizer = optim.SGD(model.parameters(), lr=0.05, momentum=0.9, weight_decay=5e-4)
+    optimizer = optim.Adam(model.parameters(), lr=0.05, weight_decay=5e-4)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer,
         milestones=[
@@ -54,7 +54,8 @@ def train(model, train_loader):
                 priors = priorbox.forward()
                 priors = priors.cuda()
             loss_l, loss_c, loss_id = criterion(outputs, priors, target)
-            loss = loss_l + loss_c + loss_id
+            # loss = loss_l + loss_c + loss_id
+            loss = loss_l + loss_c
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -74,6 +75,6 @@ if __name__ == '__main__':
     # print(model)
     # torch.distributed.init_process_group()
     # model = torch.nn.DataParallel(model)
-    # check = torch.load("epoch_16_loss_0.09874087572097778.pth")
-    # model.load_state_dict(check["net"])
+    check = torch.load("epoch_10_loss_3.701143264770508.pth")
+    model.load_state_dict(check["net"])
     train(model, trainloader)
