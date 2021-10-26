@@ -18,18 +18,18 @@ from utils.prior_box import PriorBox
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--trained_model', default='epoch_77_loss_2.0705957412719727.pth',
+parser.add_argument('--trained_model', default='epoch_62_loss_0.09481821209192276.pth',
                     type=str, help='Trained state_dict file path to open')
-parser.add_argument('--confidence_threshold', default=0.2,
+parser.add_argument('--confidence_threshold', default=0.01,
                     type=float, help='confidence_threshold')
 parser.add_argument('--nms_threshold', default=0.35,
                     type=float, help='nms_threshold')
-parser.add_argument('--vis_thres', default=0.2, type=float,
+parser.add_argument('--vis_thres', default=0.3, type=float,
                     help='visualization_threshold')
-parser.add_argument('--image', default='images/000023.jpg',
+parser.add_argument('--image', default='images/000026.jpg',
                     help='test image path')
 parser.add_argument('--save_path',
-                    default='images/result_img_02.jpg',
+                    default='images/result_img_01.jpg',
                     help='test image path')
 args = parser.parse_args()
 
@@ -77,7 +77,8 @@ if __name__ == '__main__':
         print(list(map(float, b)))
         if b[4] < args.vis_thres:
             continue
-        text = "id: {:d} conf: {:.2f}".format(int(b[5]), b[4])
+        # text = "id: {:d} conf: {:.2f}".format(int(b[5]), b[4])
+        text = "id: {:d}".format(int(b[5]))
         # print(text)
         b = list(map(int, b))
         cv2.rectangle(img_raw, (b[0], b[1]), (b[2], b[3]), (0, 255, 0), 2)

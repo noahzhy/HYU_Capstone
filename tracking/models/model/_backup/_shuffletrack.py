@@ -8,14 +8,14 @@ import torch.nn.functional as F
 import torchvision.models._utils as _utils
 import torchvision.models.detection.backbone_utils as backbone_utils
 from config.config import cfg_re50, cfg_shuffle, cfg_shufflev2
-from models.head.head import (make_cls_head, make_emb_head, make_loc_head,
-                              task_specific_cls, task_specific_emb,
-                              task_specific_loc)
+from models.head.head import (cls_head, emb_head, loc_head,
+                              head_cls_shared, head_emb_shared,
+                              head_loc_shared)
 from models.model.ShuffleNet import ShuffleNetG2
 from models.model.ShuffleNetV2 import ShuffleNetV2
 from models.neck.neck import FPN as FPN
 from models.neck.neck import SSH as SSH
-from models.neck.neck import task_shared
+from models.neck.neck import weight_shared
 
 
 class ShuffleTrackNet(nn.Module):
@@ -65,17 +65,17 @@ class ShuffleTrackNet(nn.Module):
         self.ssh2 = SSH(out_channels, out_channels)
         self.ssh3 = SSH(out_channels, out_channels)
         # task shared
-        self.task_shared = task_shared(out_channels, out_channels, anchorNum=anchorNum)
+        self.weight_shared = weight_shared(out_channels, out_channels, anchorNum=anchorNum)
         # task specific
-        self.cls_task = task_specific_cls(out_channels, out_channels)
-        self.loc_task = task_specific_loc(out_channels, out_channels)
-        self.emb_task = task_specific_emb(out_channels, out_channels)
+        self.cls_task = head_cls_shared(out_channels, out_channels)
+        self.loc_task = head_loc_shared(out_channels, out_channels)
+        self.emb_task = head_emb_shared(out_channels, out_channels)
         # head
-        self.cls_heads = make_cls_head(inp=out_channels, fpnNum=len(
+        self.cls_heads = cls_head(inp=out_channels, fpnNum=len(
             in_channels_list), anchorNum=anchorNum)
-        self.loc_heads = make_loc_head(inp=out_channels, fpnNum=len(
+        self.loc_heads = loc_head(inp=out_channels, fpnNum=len(
             in_channels_list), anchorNum=anchorNum)
-        self.emb_heads = make_emb_head(inp=out_channels, fpnNum=len(
+        self.emb_heads = emb_head(inp=out_channels, fpnNum=len(
         in_channels_list), anchorNum=anchorNum)
         # classifier
         self.classifier = nn.Linear(128, 547)
@@ -93,7 +93,7 @@ class ShuffleTrackNet(nn.Module):
         # task shared
         for fpnfeature in fpnfeatures:
             per_anchor_feature = []
-            for per_task_shared in self.task_shared:
+            for per_task_shared in self.weight_shared:
                 per_anchor_feature.append(per_task_shared(fpnfeature))
             features.append(per_anchor_feature)
         # task specific

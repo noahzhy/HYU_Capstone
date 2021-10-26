@@ -3,3 +3,4 @@
 */__pycache__/
 logs/
 MOT17/*
+tracking/weights/*

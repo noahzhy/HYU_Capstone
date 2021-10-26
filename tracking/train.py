@@ -30,12 +30,13 @@ epochs = CFG['epoch']
 
 
 def train(model, train_loader):
-    # optimizer = optim.SGD(model.parameters(), lr=0.05, momentum=0.9, weight_decay=5e-4)
-    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=5e-4)
+    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
+    # optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
+    # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer,
         milestones=[
-            # int(0.1 * epochs),
+            int(0.1 * epochs),
             int(0.5 * epochs),
             int(0.75 * epochs)
         ],
@@ -62,7 +63,7 @@ def train(model, train_loader):
             tqdm_train.set_description(
                 f'epoch: {epoch}, total loss: {loss.item()}')
         state = {'net': model.state_dict(), 'epoch': epoch}
-        torch.save(state, 'epoch_{}_loss_{}.pth'.format(epoch, loss.item()))
+        torch.save(state, 'weights/epoch_{}_loss_{}.pth'.format(epoch, loss.item()))
 
         scheduler.step()
 
@@ -70,11 +71,11 @@ def train(model, train_loader):
 if __name__ == '__main__':
     gtds = Gtdataset()
     # gtds = Detdataset()
-    trainloader = DataLoader(gtds, batch_size=24, shuffle=True)
+    trainloader = DataLoader(gtds, batch_size=32, shuffle=True)
     model = ShuffleTrackNet(cfg=CFG).cuda()
     # print(model)
     # torch.distributed.init_process_group()
     # model = torch.nn.DataParallel(model)
-    check = torch.load("epoch_77_loss_2.0705957412719727.pth")
-    model.load_state_dict(check["net"])
+    # check = torch.load("epoch_77_loss_2.0705957412719727.pth")
+    # model.load_state_dict(check["net"])
     train(model, trainloader)

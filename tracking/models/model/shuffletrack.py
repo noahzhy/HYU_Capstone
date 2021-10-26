@@ -8,23 +8,19 @@ import torch.nn.functional as F
 import torchvision.models._utils as _utils
 import torchvision.models.detection.backbone_utils as backbone_utils
 from config.config import cfg_re50, cfg_shuffle, cfg_shufflev2
-from models.head.head import (make_cls_head, make_emb_head, make_loc_head,
-                              task_specific_cls, task_specific_emb,
-                              task_specific_loc)
+from models.head.head import (cls_head, emb_head, loc_head,
+                              head_cls_shared, head_emb_shared,
+                              head_loc_shared)
 from models.model.ShuffleNet import ShuffleNetG2
 from models.model.ShuffleNetV2 import ShuffleNetV2
 from models.neck.neck import FPN as FPN
 from models.neck.neck import SSH as SSH
-from models.neck.neck import task_shared
+from models.neck.neck import weight_shared
 
 
 class ShuffleTrackNet(nn.Module):
 
     def __init__(self, cfg=None, phase='train'):
-        """
-        :param cfg:  Network related settings.
-        :param phase: train or test.
-        """
         super(ShuffleTrackNet, self).__init__()
         self.phase = phase
         backbone = None
@@ -50,32 +46,29 @@ class ShuffleTrackNet(nn.Module):
             backbone = ShuffleNetV2(cfg['ShuffleNetV2'])
             self.body = _utils.IntermediateLayerGetter(
                 backbone, cfg['ShuffleNetV2_return_layers'])
-            # ch_list = [24, 132, 264, 528]
-            # cfg['in_channel'] = ch_list[int(cfg['ShuffleNetV2']*2-1)]
             in_channels_list = [132, 264, 528]
             pass
 
-        # not total anchor,indicate per stage anchors
         anchorNum = cfg['anchorNum_per_stage']
-        print('in_channels_list', in_channels_list)
+        # print('in_channels_list', in_channels_list)
         out_channels = cfg['out_channel']
-        self.coco = cfg['coco']
+        # self.coco = cfg['coco']
         self.fpn = FPN(in_channels_list, out_channels)
         self.ssh1 = SSH(out_channels, out_channels)
         self.ssh2 = SSH(out_channels, out_channels)
         self.ssh3 = SSH(out_channels, out_channels)
-        # task shared
-        self.task_shared = task_shared(out_channels, out_channels, anchorNum=anchorNum)
-        # task specific
-        self.cls_task = task_specific_cls(out_channels, out_channels)
-        self.loc_task = task_specific_loc(out_channels, out_channels)
-        self.emb_task = task_specific_emb(out_channels, out_channels)
+        # weight shared
+        self.weight_shared = weight_shared(out_channels, out_channels, anchorNum=anchorNum)
+        # head shared
+        self.cls_task = head_cls_shared(out_channels, out_channels)
+        self.loc_task = head_loc_shared(out_channels, out_channels)
+        self.emb_task = head_emb_shared(out_channels, out_channels)
         # head
-        self.cls_heads = make_cls_head(inp=out_channels, fpnNum=len(
+        self.cls_heads = cls_head(inp=out_channels, fpnNum=len(
             in_channels_list), anchorNum=anchorNum)
-        self.loc_heads = make_loc_head(inp=out_channels, fpnNum=len(
+        self.loc_heads = loc_head(inp=out_channels, fpnNum=len(
             in_channels_list), anchorNum=anchorNum)
-        self.emb_heads = make_emb_head(inp=out_channels, fpnNum=len(
+        self.emb_heads = emb_head(inp=out_channels, fpnNum=len(
         in_channels_list), anchorNum=anchorNum)
         self.drop = nn.Dropout(0.25)
         # classifier
@@ -91,24 +84,24 @@ class ShuffleTrackNet(nn.Module):
         feature3 = self.ssh3(fpn[2])
         fpnfeatures = [feature1, feature2, feature3]
         features = []
-        # task shared
+        # weight shared
         for fpnfeature in fpnfeatures:
             per_anchor_feature = []
-            for per_task_shared in self.task_shared:
+            for per_task_shared in self.weight_shared:
                 per_anchor_feature.append(per_task_shared(fpnfeature))
             features.append(per_anchor_feature)
-        # task specific
+        # heads
         cls_heads, loc_heads, emb_heads = [], [], []
         for i, per_fpn_features in enumerate(features):
             for j, per_anchor_feature in enumerate(per_fpn_features):
                 cls_task_feature = self.cls_task(per_anchor_feature)
                 loc_task_feature = self.loc_task(per_anchor_feature)
                 emb_task_feature = self.emb_task(per_anchor_feature)
-                # cls feature,only one class but with background total class is two
+                # cls feature
                 cls_head = self.cls_heads[i * len(per_fpn_features) + j](cls_task_feature)
                 loc_head = self.loc_heads[i * len(per_fpn_features) + j](loc_task_feature)
                 emb_head = self.emb_heads[i * len(per_fpn_features) + j](emb_task_feature)
-                # loc frature,(x,y,w,h)
+                # loc (x,y,w,h)
                 cls_head = cls_head.permute(0, 2, 3, 1).contiguous().view(cls_head.shape[0], -1, 12)
                 loc_head = loc_head.permute(0, 2, 3, 1).contiguous().view(loc_head.shape[0], -1, 4)
                 emb_head = emb_head.permute(0, 2, 3, 1).contiguous().view(emb_head.shape[0], -1, 128)

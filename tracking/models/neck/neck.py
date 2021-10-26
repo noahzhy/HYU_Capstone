@@ -7,10 +7,10 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 
-def task_shared(inp, oup, stride=1, leaky=0, m1=3, anchorNum=3):
+def weight_shared(inp, oup, stride=1, leaky=0, repeat=3, anchorNum=3):
     peranchor_feature, allanchor_feature = nn.ModuleList(), nn.ModuleList()
     for i in range(anchorNum):
-        for j in range(m1):
+        for j in range(repeat):
             peranchor_feature.append(conv_dw(inp, oup, stride, leaky))
         allanchor_feature.append(nn.Sequential(*peranchor_feature))
     return allanchor_feature
