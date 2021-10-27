@@ -12,11 +12,11 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torchvision
 from torch.nn.parallel import DistributedDataParallel
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import *
 from tqdm import tqdm
 
-from config.config import cfg_re50, cfg_shuffle, cfg_shufflev2
-from dataloader import Detdataset, Gtdataset, Shuffledataset
+from config.config import *
+from dataloader import *
 from models.model.shuffletrack import ShuffleTrackNet
 from utils.box_utils import decode
 from utils.prior_box import PriorBox
@@ -30,8 +30,7 @@ epochs = CFG['epoch']
 
 
 def train(model, train_loader):
-    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
-    # optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
+    optimizer = optim.SGD(model.parameters(), lr=0.005, momentum=0.9, weight_decay=5e-4)
     # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer,
@@ -42,7 +41,7 @@ def train(model, train_loader):
         ],
         gamma=0.1
     )
-    criterion = MultiBoxLoss(12, 0.35, True, 0, True, 5, 0.35, False)
+    criterion = MultiBoxLoss(12, 0.3, True, 0, True, 5, 0.3, False)
 
     for epoch in range(1, CFG['epoch']+1):
         tqdm_train = tqdm(train_loader)

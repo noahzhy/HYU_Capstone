@@ -173,8 +173,7 @@ class ShuffleV2Block(nn.Module):
                 # pw-linear
                 nn.Conv2d(oup_inc, oup_inc, 1, 1, 0, bias=False),
                 nn.BatchNorm2d(oup_inc),
-                # nn.ReLU(inplace=True),
-                CBAM(gate_channels=oup_inc),
+                nn.ReLU(inplace=True),
             )                
         else:                  
             self.banch1 = nn.Sequential(
@@ -198,9 +197,9 @@ class ShuffleV2Block(nn.Module):
                 # pw-linear
                 nn.Conv2d(oup_inc, oup_inc, 1, 1, 0, bias=False),
                 nn.BatchNorm2d(oup_inc),
-                # nn.ReLU(inplace=True),
-                CBAM(gate_channels=oup_inc),
+                nn.ReLU(inplace=True),
             )
+        self.cbam = CBAM(oup)
 
     @staticmethod
     def _concat(x, out):
@@ -214,7 +213,7 @@ class ShuffleV2Block(nn.Module):
             out = self._concat(x1, self.banch2(x2))
         elif 2==self.benchmodel:
             out = self._concat(self.banch1(x), self.banch2(x))
-
+        out = self.cbam(out)
         return channel_shuffle(out, 2)
 
 
@@ -251,7 +250,6 @@ class ShuffleNetV2(nn.Module):
         # self.conv_last = conv_1x1_bn(input_channel, self.channels[-1])
         self.globalpool = nn.Sequential(nn.AvgPool2d(int(input_size/32)))
         self.classifier = nn.Sequential(nn.Linear(self.channels[-1], n_class))
-
 
     def _make_layer(self, num_layers, in_channels, out_channels, **kwargs):
         layers = []

@@ -9,8 +9,8 @@ class Gtdataset(Dataset):
     def __init__(self, data_path='../MOT17/train'):
         self.images = []
         self.target = []
-        for vedio in os.listdir(data_path):
-            video_path = os.path.join(data_path, vedio)
+        for video in os.listdir(data_path):
+            video_path = os.path.join(data_path, video)
             f = open(os.path.join(video_path, 'gt', 'gt.txt'), 'r')
             txt = f.readlines()
             maps = {}
@@ -57,8 +57,8 @@ class Detdataset(Dataset):
     def __init__(self, data_path='../MOT17/train'):
         self.images = []
         self.target = []
-        for vedio in os.listdir(data_path):
-            video_path = os.path.join(data_path, vedio)
+        for video in os.listdir(data_path):
+            video_path = os.path.join(data_path, video)
             f = open(os.path.join(video_path, 'det', 'det.txt'), 'r')
             txt = f.readlines()
             maps = {}

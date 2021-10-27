@@ -17,8 +17,8 @@ class ShuffleBlock(nn.Module):
         '''Channel shuffle: [N,C,H,W] -> [N,g,C/g,H,W] -> [N,C/g,g,H,w] -> [N,C,H,W]'''
         N,C,H,W = x.size()
         g = self.groups
-        # 维度变换之后必须要使用.contiguous()使得张量在内存连续之后才能调用view函数
         return x.view(N,g,int(C/g),H,W).permute(0,2,1,3,4).contiguous().view(N,C,H,W)
+
 
 class Conv2D_BN_ReLU(nn.Module):
     def __init__(self,in_planes, out_planes,kernel_size=3, stride=2):
